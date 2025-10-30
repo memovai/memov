@@ -14,6 +14,7 @@ dependencies = [
     "uvicorn>=0.35.0",
     "chromadb>=0.5.0",
     "rich>=13.0.0",
+    "litellm>=1.0.0",
 ]
 
 [project.optional-dependencies]
@@ -27,6 +28,7 @@ dependencies = [
 mem = "memov.main:main"
 mem-mcp-server = "mem_mcp_server.cli.server_cli:main"
 mem-mcp-launcher = "mem_mcp_server.server.mcp_launcher:main"
+mem-docgen = "memov.docgen_cli:main"
 
 [tool.uv]
 package = true
@@ -36,6 +38,9 @@ packages = [
     "memov",
     "memov.core",
     "memov.utils",
+    "memov.docgen",
+    "memov.debugging",
+    "memov.storage",
     "mem_mcp_server",
     "mem_mcp_server.cli",
     "mem_mcp_server.server",

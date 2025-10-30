@@ -27,7 +27,7 @@ class HTTPOpenAISummarizer:
     HTTP-based OpenAI summarizer that doesn't depend on the openai package
     """
 
-    def __init__(self, api_key: str = None, model: str = "gpt-4o-mini"):
+    def __init__(self, api_key: str = None, model: str = "qwen2:0.5b"):
         """
         Initialize the HTTP OpenAI summarizer
 
@@ -48,7 +48,8 @@ class HTTPOpenAISummarizer:
 
         self.api_key = api_key or os.environ.get("OPENAI_API_KEY")
         self.model = model
-        self.api_url = "https://api.openai.com/v1/chat/completions"
+        self.api_url = "http://127.0.0.1:11434/v1/chat/completions"
+        # self.api_url = "https://api.openai.com/v1/chat/completions"
 
         LOGGER.info(f"API key set: {'Yes' if self.api_key else 'No'}")
 
@@ -125,7 +126,7 @@ class HTTPOpenAISummarizer:
 
     def _get_json_system_prompt(self) -> str:
         """Get optimized system prompt that ensures JSON output"""
-        return f"""You are an expert development assistant specializing in analyzing commit history and creating detailed project summaries. 
+        return f"""You are an expert development assistant specializing in analyzing commit history and creating detailed project summaries.
 
 You must respond with a valid JSON object following this exact schema:
 
@@ -134,7 +135,7 @@ You must respond with a valid JSON object following this exact schema:
 Instructions for analysis:
 1. Analyze each commit chronologically
 2. Extract user requests and intents behind changes
-3. Identify technical decisions and code patterns  
+3. Identify technical decisions and code patterns
 4. Document file changes with specific details
 5. Note errors encountered and how they were resolved
 6. Track ongoing troubleshooting efforts
@@ -309,6 +310,8 @@ def create_summary_from_commits(
         # Try AI summarization using HTTP client (no dependencies)
         summarizer = HTTPOpenAISummarizer()
         ai_summary = summarizer.generate_summary(context)
+        print("AI Summary Generated:")
+        print(ai_summary)
 
         return {
             "ai_generated_summary": ai_summary,
