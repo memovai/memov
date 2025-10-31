@@ -21,10 +21,11 @@ def subprocess_call(
             "check": True,
             "stdout": subprocess.PIPE,
             "stderr": subprocess.PIPE,
-            "encoding": "utf-8",
             "text": text,
         }
 
+        if text:
+            kwargs["encoding"] = "utf-8"
         if input is not None:
             kwargs["input"] = input
         else:
@@ -291,9 +292,12 @@ class GitManager:
         command = ["git", f"--git-dir={bare_repo}", "show", commit_id]
         success, output = subprocess_call(command=command)
 
-        sys.stdout.write(output.stdout)
-        if output.stderr:
-            sys.stderr.write(output.stderr)
+        if success and output:
+            sys.stdout.write(output.stdout)
+            if output.stderr:
+                sys.stderr.write(output.stderr)
+        else:
+            LOGGER.error(f"Failed to show commit {commit_id} in repository at {bare_repo}")
 
     @staticmethod
     def get_commit_history(bare_repo: str, tip: str) -> list[str]:
@@ -312,8 +316,9 @@ class GitManager:
         if success:
             return output.stdout.strip().splitlines()
         else:
+            err_msg = output.stderr if output else "Unknown error"
             LOGGER.error(
-                f"Failed to get commit history for {tip} in repository at {bare_repo}: {output.stderr}"
+                f"Failed to get commit history for {tip} in repository at {bare_repo}: {err_msg}"
             )
             return []
 
