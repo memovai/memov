@@ -9,6 +9,7 @@ dependencies = [
     "mcp>=1.13.0",
     "pathspec>=0.12.1",
     "psutil>=7.0.0",
+    "pyinstaller>=6.16.0",
     "starlette>=0.47.2",
     "typer>=0.16.0",
     "uvicorn>=0.35.0",

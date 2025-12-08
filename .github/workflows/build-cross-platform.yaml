@@ -1,0 +1,90 @@
+name: Cross-Platform Binary Build
+
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+      fail-fast: false
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        run: |
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            curl -LsSf https://astral.sh/uv/install.sh | sh
+          elif [ "$RUNNER_OS" = "macOS" ]; then
+            curl -LsSf https://astral.sh/uv/install.sh | sh
+          else
+            powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+          fi
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+        shell: bash
+
+      - name: Install dependencies
+        run: uv sync --dev
+
+      - name: Install UPX
+        uses: crazy-max/ghaction-upx@v3
+        with:
+          upx-version: latest
+          upx-pack: false
+
+      - name: Build binary with PyInstaller
+        run: uv run pyinstaller pyinstaller.spec
+
+      - name: Test binary
+        run: |
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            dist/mem-mcp-launcher-windows.exe --help
+          else
+            dist/mem-mcp-launcher-${{ matrix.os == 'macos-latest' && 'macos' || 'linux' }} --help
+          fi
+        shell: bash
+
+      - name: Package binary
+        run: |
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            7z a memov-launcher-windows.zip ./dist/*
+          else
+            zip -r memov-launcher-${{ matrix.os == 'macos-latest' && 'macos' || 'linux' }}.zip ./dist/*
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: memov-launcher-${{ matrix.os }}
+          path: memov-launcher-*.zip
+
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/memov-launcher-ubuntu-latest/memov-launcher-linux.zip
+            artifacts/memov-launcher-windows-latest/memov-launcher-windows.zip
+            artifacts/memov-launcher-macos-latest/memov-launcher-macos.zip
+          generate_release_notes: true

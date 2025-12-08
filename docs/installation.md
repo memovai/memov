@@ -15,12 +15,12 @@
 1. **Install uv** - [Modern Python package and project manager](https://docs.astral.sh/uv/getting-started/installation/)
 
    **Linux / macOS:**
-   
+
    Using `curl`:
    ```bash
    curl -LsSf https://astral.sh/uv/install.sh | sh
    ```
-   
+
    Or using `wget`:
    ```bash
    wget -qO- https://astral.sh/uv/install.sh | sh
