@@ -1,81 +1,64 @@
 # Installation Instructions
 
-### One-Click Setup (Recommended, two clicks for now😅)
+### Prerequisites
 
-<div align="center">
+Install `uv` first - [Modern Python package and project manager](https://docs.astral.sh/uv/getting-started/installation/)
 
-[![Add to VS Code](https://img.shields.io/badge/Add%20to%20VS%20Code-007ACC?style=for-the-badge&logo=visual-studio-code&logoColor=white)](https://memov-vscode.vercel.app/)
-[![Add to Cursor](https://img.shields.io/badge/Add%20to%20CURSOR-000000?style=for-the-badge&logo=visual-studio-code&logoColor=white)](https://memov-vscode.vercel.app/)
+```bash
+# macOS / Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
 
-</div>
+# Windows
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
 
+### Claude Code
 
-### Manual Configuration
+Run in your project root directory:
 
-1. **Install uv** - [Modern Python package and project manager](https://docs.astral.sh/uv/getting-started/installation/)
+```bash
+claude mcp add mem-mcp --scope project -- uvx --from git+https://github.com/memovai/memov.git mem stdio $(pwd)
+```
 
-   **Linux / macOS:**
-   
-   Using `curl`:
-   ```bash
-   curl -LsSf https://astral.sh/uv/install.sh | sh
-   ```
-   
-   Or using `wget`:
-   ```bash
-   wget -qO- https://astral.sh/uv/install.sh | sh
-   ```
+### VS Code
 
-   **Windows:**
-   ```powershell
-   powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-   ```
+Create `.vscode/mcp.json` in your project root:
 
-2. **Configure your IDE**
-
-    **VS Code:** Create `.vscode/mcp.json` in your project root:
-    ```json
-    {
-      "servers": {
-        "mem-mcp": {
-          "type": "stdio",
-          "command": "uvx",
-          "args": [
-            "--from",
-            "git+https://github.com/memovai/memov.git",
-            "mem-mcp-launcher",
-            "stdio",
-            "${workspaceFolder}"
-          ]
-        }
-      },
-      "inputs": []
+```json
+{
+  "servers": {
+    "mem-mcp": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/memovai/memov.git",
+        "mem",
+        "stdio",
+        "${workspaceFolder}"
+      ]
     }
-    ```
+  }
+}
+```
 
+### Cursor
 
-    **Cursor:** Go to Files > Preferences > Cursor Settings > MCP, then add a new MCP server with the following config:
-    ```json
-    {
-      "mcpServers": {
-        "mem-mcp": {
-          "type": "stdio",
-          "command": "uvx",
-          "args": [
-            "--from",
-            "git+https://github.com/memovai/memov.git",
-            "mem-mcp-launcher",
-            "stdio",
-            "${workspaceFolder}"
-          ]
-        }
-      }
+Go to **Files > Preferences > Cursor Settings > MCP**, then add:
+
+```json
+{
+  "mcpServers": {
+    "mem-mcp": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/memovai/memov.git",
+        "mem",
+        "stdio",
+        "${workspaceFolder}"
+      ]
     }
-    ```
-
-
-    **Claude Code:** Run the following command in your terminal to add the MCP server:
-    > Note: Make sure you are in your project root directory when running this command, like where your `.git` folder is located.
-    ```bash
-    claude mcp add mem-mcp --scope project -- uvx --from git+https://github.com/memovai/memov.git mem-mcp-launcher stdio $(pwd)
-    ```
+  }
+}
+```

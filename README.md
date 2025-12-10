@@ -4,7 +4,7 @@
   </a>
 </p>
 
-# Never forget a commit, and vibe debugging
+# VibeGit: Auto-manage your prompts, plans, and code diffs.
 
 <div align="center">
 
@@ -14,13 +14,13 @@
 
 </div>
 
-MemoV = Prompt + Context + CodeDiff
+MemoV = Prompt + Agent Plan + CodeDiff
 
 <p align="center">
   <img src="docs/images/readme.gif" alt="MemoV Demo" width="800px">
 </p>
 
-It gives AI coding agents a traceable memory layer beyond Git — auto-capturing **every prompt**, **agent plan**, and **code change** in a separate timeline. Work freely with AI, iterate fast, and keep your Git history clean. When you're ready, cherry-pick what matters for Git commits. Based on memory, we built an open source Aardvark: OpenAI’s agentic security researcher.
+VibeGit: Every interaction captured naturally — prompts, plans, and diffs auto-managed. Keep Git clean with a shadow .mem timeline for everything before the commit.
 
 - 💬 [Join our Discord](https://discord.gg/un54aD7Hug) and dive into smarter context engineering
 - 🌐 [Visit memov.ai](https://memov.ai) to visualize your coding memory and supercharge existing GitHub repos
@@ -35,40 +35,75 @@ It gives AI coding agents a traceable memory layer beyond Git — auto-capturing
 
 ## Features
 
-- 📒 **Context-bound memory**: Automatically track user GitDiffs, prompts, and agent plans — independent of Git history
-- 🐞 **Vibe debugging**: Isolate faulty context and leverage it across LLMs for 5× faster fixing
-- ✅ **Validation & alignment checking**: Verify AI prompts match actual code changes, detect context drift
+- 📒 **Context-bound memory**: Automatically track user code diffs, prompts, and agent plans — independent of .git.
+- ⏪ **Fine-grained rollback**: Revert to a specific agent plan — more precise than git commits
 - 🤝 **Team context sharing**: Real-time alignment with zero friction
 - ♻️ **Change reuse**: Reapply past code edits by description to save tokens when iterating on a feature
-- 🔍 **History-driven optimization**: Use past records and failed generations as reference context to boost future outputs
-
-## Why MemoV vs. [Aardvark](https://openai.com/index/introducing-aardvark/)?
-
-While OpenAI's Aardvark operates at the git commit level, **MemoV captures context at a much finer granularity** — every AI interaction — preserving the full story that commits lose.
-
-<p align="center">
-  <img src="docs/images/memov-debug.png" alt="MemoV Context Isolation and Auto Debugging" width="600px">
-</p>
-
-| Aspect | MemoV | Aardvark |
-|--------|-------|----------|
-| **Tracking Level** | Per AI interaction | Per git commit |
-| **Context Captured** | Intent + Plan + Code Changes | Only code changes |
-| **Information Loss** | Minimal - full conversation preserved | High - iterations & intent lost |
-| **Debugging** | Backtrace to exact prompt/plan that caused bug | Only know which commit broke things |
-| **Open Source** | ✅ MIT License | ❌ Proprietary |
-
-**Key advantages**:
-- 🔬 **Finer Granularity**: Captures user intent, AI plans, and code evolution — not just final diffs
-- 🐞 **Backtrace Debugging**: Trace bugs back to the exact interaction, replay context across LLMs for 5× faster fixes
-- 🔓 **Open Source**: Fully transparent, extensible, and community-driven
-
-See [MEMOV_VS_AARDVARK.md](docs/MEMOV_VS_AARDVARK.md) for comprehensive comparison.
-
 
 ## Installation
 
-Please see [docs/installation.md](docs/installation.md) for detailed installation instructions.
+### Prerequisites
+
+Install `uv` first:
+
+```bash
+# macOS / Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Windows
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+### Claude Code
+
+Run in your project root directory:
+
+```bash
+claude mcp add mem-mcp --scope project -- uvx --from git+https://github.com/memovai/memov.git mem stdio $(pwd)
+```
+
+### VS Code
+
+Create `.vscode/mcp.json` in your project root:
+
+```json
+{
+  "servers": {
+    "mem-mcp": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/memovai/memov.git",
+        "mem",
+        "stdio",
+        "${workspaceFolder}"
+      ]
+    }
+  }
+}
+```
+
+### Cursor
+
+Go to **Files > Preferences > Cursor Settings > MCP**, then add:
+
+```json
+{
+  "mcpServers": {
+    "mem-mcp": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/memovai/memov.git",
+        "mem",
+        "stdio",
+        "${workspaceFolder}"
+      ]
+    }
+  }
+}
+```
 
 ## Installation for Contributors
 
