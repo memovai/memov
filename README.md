@@ -20,7 +20,7 @@ MemoV = Prompt + Agent Plan + CodeDiff
   <img src="docs/images/readme.gif" alt="MemoV Demo" width="800px">
 </p>
 
-VibeGit: Every interaction captured naturally — prompts, plans, and diffs auto-managed. Keep Git clean with a shadow .mem timeline for everything before the commit.
+VibeGit: A shadow `.mem` timeline alongside git — every interaction (prompt, plan, diff) captured before you commit.
 
 - 💬 [Join our Discord](https://discord.gg/un54aD7Hug) and dive into smarter context engineering
 - 🌐 [Visit memov.ai](https://memov.ai) to visualize your coding memory and supercharge existing GitHub repos
@@ -36,7 +36,7 @@ VibeGit: Every interaction captured naturally — prompts, plans, and diffs auto
 ## Features
 
 - 📒 **Context-bound memory**: Automatically track user code diffs, prompts, and agent plans — independent of .git.
-- ⏪ **Fine-grained rollback**: Revert to a specific agent plan — more precise than git commits
+- ⏪ **Fine-grained rollback**: Built on git, revert to a specific agent plan within a single commit
 - 🤝 **Team context sharing**: Real-time alignment with zero friction
 - ♻️ **Change reuse**: Reapply past code edits by description to save tokens when iterating on a feature
 
