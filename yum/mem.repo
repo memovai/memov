@@ -1,0 +1,5 @@
+[mem]
+name=MEM Repository
+baseurl=https://memovai.github.io/memov/yum
+enabled=1
+gpgcheck=0
