@@ -1,0 +1,15 @@
+Package: mem
+Architecture: amd64
+Version: 0.0.2
+Priority: optional
+Section: devel
+Maintainer: Memov Team <contact@memov.dev>
+Filename: pool/main/m/mem/mem_0.0.2_amd64.deb
+Size: 25130026
+MD5sum: c423be9b1b909f840092b28ade441a9c
+SHA1: 12498c736f29913f408dccdd1572a998a2de0a61
+SHA256: 02a5858557295ba8c47aefc94c019a9771bd9c33e7334810fca0d32fc991dece
+SHA512: cfffaa65c66e6d1cdf7104dec0a0fd90fb1c4a27b812419bbbe6aa65af51614ceafca0fc927c555ff690dfe9c49a681e874811ba901bd2b2925e4cecf70603a5
+Homepage: https://github.com/memovai/memov
+Description: AI-powered version control tool - memory layer for AI coding agents
+

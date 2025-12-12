@@ -1,0 +1,24 @@
+Origin: MEM
+Label: MEM
+Suite: stable
+Codename: stable
+Architectures: amd64
+Components: main
+Description: MEM APT Repository
+Date: Fri, 12 Dec 2025 09:46:34 +0000
+MD5Sum:
+ cfb93e5fd7edd5f38862c19044bd5417              162 Release
+ b2d2ade0243a304cac0d26a0b4d69d51              609 main/binary-amd64/Packages
+ 3da6310781d4e5586122cf04d43e027f              451 main/binary-amd64/Packages.gz
+SHA1:
+ cd33de9f3ca8a7f5170c15e2cb89de69359c270a              162 Release
+ dd17e22538671d90677dc914fce7fc631a87bbe0              609 main/binary-amd64/Packages
+ 8d48dc123e76cc3b5d2b021d8d21bbf985216eb2              451 main/binary-amd64/Packages.gz
+SHA256:
+ f8ef5aadcb064c8c814849b4f88188e827015556bc8a83cd54786c94f5e8cf6f              162 Release
+ ba910d51de133581024324ccf8ac235be75a71c48408a136e105281466a604ff              609 main/binary-amd64/Packages
+ a9f5ed586695316d726ad0f0d1286ec6296f4111e784938997ab4cf97065fda4              451 main/binary-amd64/Packages.gz
+SHA512:
+ f531c505f15c80abafad2c9700779313f46820d908b2b23ac5f1fd772b80301d3e3f19f10b19adfa775230209edefa6479bbc1f23c22c610ab18c0b3c4d7b3f2              162 Release
+ c763dc291918cb03a96a57c260912f406944d337263e88cd16a0d731ac8388cafb1026a14007f07754e300b4c4d22a6aec7286d6cab4d8a0c7ec4b6a424a06c3              609 main/binary-amd64/Packages
+ 000c2fc308609aab090244bfb99496fc2aff0d8964b7c2c7031a5b6c1de26dbdb89b0df8d0821ee2c983d061f983d4eada4a7aadfbbc03f64208e2c37138d466              451 main/binary-amd64/Packages.gz

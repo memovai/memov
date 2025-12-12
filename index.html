@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head><title>MEM Package Repository</title></head>
+<body>
+  <h1>MEM Package Repository</h1>
+
+  <h2>APT (Debian/Ubuntu)</h2>
+  <pre>
+echo "deb [trusted=yes] https://memovai.github.io/memov/apt stable main" | sudo tee /etc/apt/sources.list.d/mem.list
+sudo apt update
+sudo apt install mem
+  </pre>
+
+  <h2>YUM/DNF (Fedora/RHEL)</h2>
+  <pre>
+sudo curl -o /etc/yum.repos.d/mem.repo https://memovai.github.io/memov/yum/mem.repo
+sudo dnf install mem
+  </pre>
+</body>
+</html>
