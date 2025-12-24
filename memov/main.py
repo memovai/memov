@@ -515,6 +515,38 @@ def search(
         sys.exit(1)
 
 
+@app.command()
+def ui(
+    loc: LocOption = ".",
+    port: Annotated[int, typer.Option("--port", help="HTTP port for the UI server")] = 8765,
+    no_browser: Annotated[
+        bool, typer.Option("--no-browser", help="Don't automatically open browser")
+    ] = False,
+) -> None:
+    """Start a local web UI to visualize .mem directory git information.
+
+    This command starts a web server that provides a visual interface for exploring
+    the memov history, including commits, diffs, prompts, responses, and more.
+
+    Examples:
+        # Start UI with default settings (opens browser)
+        mem ui
+
+        # Start on a specific port
+        mem ui --port 9000
+
+        # Don't open browser automatically
+        mem ui --no-browser
+
+        # Specify project directory
+        mem ui --loc /path/to/project
+    """
+    from memov.ui.server import start_ui_server
+
+    manager = get_manager(loc)
+    start_ui_server(manager=manager, port=port, open_browser=not no_browser)
+
+
 def main() -> None:
     """Main entry point for the memov command line interface."""
     try:

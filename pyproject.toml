@@ -43,6 +43,7 @@ packages = [
     "memov",
     "memov.core",
     "memov.utils",
+    "memov.ui",
     "mem_mcp_server",
     "mem_mcp_server.cli",
     "mem_mcp_server.server",
@@ -51,6 +52,7 @@ packages = [
 
 [tool.setuptools.package-data]
 "*" = ["**/*.py"]
+"memov.ui" = ["static/*"]
 
 [tool.black]
 line-length = 100
