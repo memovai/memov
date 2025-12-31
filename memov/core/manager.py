@@ -1089,7 +1089,10 @@ class MemovManager:
                 rev_list = GitManager.get_commit_history(self.bare_repo_path, branch_tip)
                 for commit in rev_list:
                     _, file_abs_paths = GitManager.get_files_by_commit(self.bare_repo_path, commit)
-                    all_tracked_files.update(file_abs_paths)
+                    # Normalize paths for cross-platform compatibility
+                    all_tracked_files.update(
+                        os.path.normpath(os.path.abspath(p)) for p in file_abs_paths
+                    )
 
             # Verify archive can be created BEFORE deleting files
             archive = GitManager.git_archive(self.bare_repo_path, full_hash)
@@ -1098,17 +1101,24 @@ class MemovManager:
                 return MemStatus.UNKNOWN_ERROR, ""
 
             # Now safe to remove files that are not in the snapshot
-            snapshot_files, _ = GitManager.get_files_by_commit(self.bare_repo_path, full_hash)
+            # Use absolute paths for comparison (normalize for cross-platform compatibility)
+            _, snapshot_abs_files = GitManager.get_files_by_commit(self.bare_repo_path, full_hash)
+            snapshot_abs_set = set(os.path.normpath(os.path.abspath(p)) for p in snapshot_abs_files)
             for file_path in all_tracked_files:
-                if file_path not in snapshot_files and os.path.exists(file_path):
+                normalized_path = os.path.normpath(os.path.abspath(file_path))
+                if normalized_path not in snapshot_abs_set and os.path.exists(file_path):
                     try:
                         os.remove(file_path)
                     except OSError as e:
                         LOGGER.warning(f"Failed to delete {file_path}: {e}")
 
             # Extract the snapshot content to the workspace
-            with tarfile.open(fileobj=io.BytesIO(archive), mode="r:") as tar:
-                tar.extractall(self.project_path)
+            try:
+                with tarfile.open(fileobj=io.BytesIO(archive), mode="r:") as tar:
+                    tar.extractall(self.project_path)
+            except (tarfile.TarError, OSError, PermissionError) as e:
+                LOGGER.error(f"Failed to extract archive to {self.project_path}: {e}")
+                return MemStatus.UNKNOWN_ERROR, ""
 
             # Auto-create a new branch at this commit
             # Record where we jumped from (the previous HEAD)
