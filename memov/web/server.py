@@ -175,9 +175,9 @@ def create_app(project_path: str) -> "FastAPI":
         if manager.check() is not MemStatus.SUCCESS:
             raise HTTPException(status_code=400, detail="Memov not initialized")
 
-        status, new_branch = manager.jump(commit_hash)
+        status, new_branch, error_detail = manager.jump(commit_hash)
         if status is not MemStatus.SUCCESS:
-            raise HTTPException(status_code=400, detail=f"Jump failed: {status}")
+            raise HTTPException(status_code=400, detail=f"Jump failed: {error_detail or status}")
 
         return {"status": "success", "new_branch": new_branch}
 

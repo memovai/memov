@@ -1060,14 +1060,14 @@ class MemovManager:
 
         return diffs_by_file
 
-    def jump(self, commit_hash: str) -> tuple[MemStatus, str]:
+    def jump(self, commit_hash: str) -> tuple[MemStatus, str, str]:
         """Jump to a specific snapshot and auto-create a new branch.
 
         Args:
             commit_hash: The commit hash to jump to (full or short form)
 
         Returns:
-            Tuple of (MemStatus, branch_name) - branch_name is the auto-created branch
+            Tuple of (MemStatus, branch_name, error_detail) - branch_name is the auto-created branch
         """
         try:
             # Validate commit hash exists
@@ -1076,14 +1076,14 @@ class MemovManager:
             )
             if not full_hash:
                 LOGGER.error(f"Commit '{commit_hash}' not found.")
-                return MemStatus.UNKNOWN_ERROR, ""
+                return MemStatus.UNKNOWN_ERROR, "", f"Commit '{commit_hash}' not found"
 
             # Get all files that have ever been tracked
             all_tracked_files = set()
             branches = self._load_branches()
             if branches is None or "branches" not in branches:
                 LOGGER.error("No branches configuration found.")
-                return MemStatus.UNKNOWN_ERROR, ""
+                return MemStatus.UNKNOWN_ERROR, "", "No branches configuration found"
 
             for branch_tip in branches["branches"].values():
                 rev_list = GitManager.get_commit_history(self.bare_repo_path, branch_tip)
@@ -1098,7 +1098,11 @@ class MemovManager:
             archive = GitManager.git_archive(self.bare_repo_path, full_hash)
             if archive is None:
                 LOGGER.error(f"Failed to create archive for commit {commit_hash}.")
-                return MemStatus.UNKNOWN_ERROR, ""
+                return (
+                    MemStatus.UNKNOWN_ERROR,
+                    "",
+                    f"Failed to create archive for commit {commit_hash}",
+                )
 
             # Now safe to remove files that are not in the snapshot
             # Use absolute paths for comparison (normalize for cross-platform compatibility)
@@ -1115,10 +1119,20 @@ class MemovManager:
             # Extract the snapshot content to the workspace
             try:
                 with tarfile.open(fileobj=io.BytesIO(archive), mode="r:") as tar:
-                    tar.extractall(self.project_path)
+                    # Use extractall with filter for Python 3.12+ compatibility
+                    # Also ensure directory creation on Windows
+                    for member in tar.getmembers():
+                        # Normalize path separators for Windows
+                        member.name = member.name.replace("/", os.sep)
+                        # Ensure parent directories exist
+                        target_path = os.path.join(self.project_path, member.name)
+                        parent_dir = os.path.dirname(target_path)
+                        if parent_dir and not os.path.exists(parent_dir):
+                            os.makedirs(parent_dir, exist_ok=True)
+                        tar.extract(member, self.project_path)
             except (tarfile.TarError, OSError, PermissionError) as e:
                 LOGGER.error(f"Failed to extract archive to {self.project_path}: {e}")
-                return MemStatus.UNKNOWN_ERROR, ""
+                return MemStatus.UNKNOWN_ERROR, "", f"Failed to extract archive: {e}"
 
             # Auto-create a new branch at this commit
             # Record where we jumped from (the previous HEAD)
@@ -1152,10 +1166,10 @@ class MemovManager:
                 )
 
             LOGGER.info(f"Jumped to commit {full_hash[:7]} and created branch '{new_branch}'.")
-            return MemStatus.SUCCESS, new_branch
+            return MemStatus.SUCCESS, new_branch, ""
         except Exception as e:
             LOGGER.error(f"Error jumping to commit in memov repo: {e}", exc_info=True)
-            return MemStatus.UNKNOWN_ERROR, ""
+            return MemStatus.UNKNOWN_ERROR, "", f"Exception: {type(e).__name__}: {e}"
 
     def _generate_jump_branch_name(self, branches: dict) -> str:
         """Generate a unique branch name for jump operation."""
