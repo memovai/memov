@@ -8,7 +8,7 @@
   <b>English</b> | <a href="README_CN.md">简体中文</a> | <a href="README_JA.md">日本語</a>
 </p>
 
-# VibeGit🤌: Auto-track your prompts, context & code diffs.
+#### VibeGit🤌: Auto-track your prompts, context & code diffs.
 
 <div align="center">
 
