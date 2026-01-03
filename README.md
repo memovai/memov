@@ -20,6 +20,8 @@
 
 Traceable, Git-powered memory for AI coding. Prompts, context, and code diffs **auto versioned** - it's VibeGit!🤌
 
+Persistent. Rollback anytime, branch freely, explore different solutions.
+
 Avoid 1000+ **manual** commits, your **.git** still stays clean.
 
 
@@ -53,8 +55,8 @@ Avoid 1000+ **manual** commits, your **.git** still stays clean.
 - 🧠 **Full context** — Every prompt → agent plan → code diff is captured in real time
 - ⏪ **Version Control** — Branch, rollback, replay any interaction
 - 🧼 **Keep Git Clean** — Shadow `.mem` timeline, zero pollution on `.git` 
-- 🔍 **Visual UI** — Browse your AI coding history
-- 🔒 **Private-first** — Local, no database, no overhead
+- 🔍 **Visual UI** — Browse your AI coding history at http://localhost:38888
+- 🔒 **Private-first** — Local, no database, no overhead. Use .memignore to exclude
 
 
 ## Quick Start (MCP Installation)
