@@ -655,11 +655,11 @@ class MemMCPTools:
             if not target_entry:
                 return f"[ERROR] Commit '{commit_hash}' not found. Use mem_history() to see available commits."
 
-            # Perform the jump (now returns tuple)
-            jump_status, new_branch = memov_manager.jump(commit_hash.strip())
+            # Perform the jump (returns 3-tuple: status, branch, error_detail)
+            jump_status, new_branch, error_detail = memov_manager.jump(commit_hash.strip())
 
             if jump_status is not MemStatus.SUCCESS:
-                return f"[ERROR] Failed to jump to commit '{commit_hash}': {jump_status}"
+                return f"[ERROR] Failed to jump to commit '{commit_hash}': {error_detail or jump_status}"
 
             # Build success message
             lines = []

@@ -177,8 +177,15 @@ def jump(
     loc: LocOption = ".",
 ) -> None:
     """Jump to a specific snapshot, restoring the project state."""
+    from memov.core.manager import MemStatus
+
     manager = get_manager(loc)
-    manager.jump(snapshot_id)
+    console = get_console()
+    status, new_branch, error_detail = manager.jump(snapshot_id)
+    if status is MemStatus.SUCCESS:
+        console.print(f"[green]✓ Jumped to {snapshot_id}, created branch '{new_branch}'[/green]")
+    else:
+        console.print(f"[red]✗ Jump failed: {error_detail or status}[/red]")
 
 
 @app.command()
