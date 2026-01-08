@@ -58,3 +58,18 @@ SHA512: 82e783e8bb2cf49c7627a238f634aba8faf6f76fd426d11aefa03bed67a90a50776cde34
 Homepage: https://github.com/memovai/memov
 Description: AI-powered version control tool - memory layer for AI coding agents
 
+Package: mem
+Architecture: amd64
+Version: 0.0.6
+Priority: optional
+Section: devel
+Maintainer: Memov Team <contact@memov.dev>
+Filename: pool/main/m/mem/mem_0.0.6_amd64.deb
+Size: 16256098
+MD5sum: ccf588680d3cefc9c8c77ec2a6880c18
+SHA1: 187991336f7b72e503e8f9e39d025fe91b12aa17
+SHA256: ddaec805823bfa5f8a6c545745b42f3168c50aa5557ecc316240a3759b51d0b7
+SHA512: 7f6c067e5ab14ea766165f1cc62e63f3b0ba6d615be34833ffaa634d7d97a99b7472f932752753ce74d7416fcaff378c45314e3f9e03313032209f0448c7e4d5
+Homepage: https://github.com/memovai/memov
+Description: AI-powered version control tool - memory layer for AI coding agents
+
