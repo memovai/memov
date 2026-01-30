@@ -60,8 +60,9 @@ async def _call_openai(api_key: str, system_prompt: str, user_prompt: str) -> st
                 "Content-Type": "application/json",
             },
             json={
-                "model": "gpt-4o-mini",
+                "model": "gpt-5-nano",
                 "max_tokens": 1024,
+                "response_format": {"type": "json_object"},
                 "messages": [
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt},
@@ -259,17 +260,22 @@ def create_app(project_path: str) -> "FastAPI":
         # Build AI prompt
         system_prompt = """You are an AI assistant helping users search their code history.
 You will be given a list of commits with their prompts/messages.
-Answer the user's question based on this history. Be concise.
+Answer the user's question based ONLY on this history. Be concise.
 
-IMPORTANT: Your response must be in JSON format with two fields:
-1. "answer": A concise answer to the user's question
-2. "commit_ids": An array of relevant commit hashes (short 7-char format) mentioned in your answer
+LANGUAGE:
+- Detect the language of the user's question.
+- Respond in the SAME language as the user's question.
+- If the question explicitly requests a language, prioritize that language.
 
-Example format:
-{
-  "answer": "You fixed the login bug in commit abc1234...",
-  "commit_ids": ["abc1234", "def5678"]
-}"""
+OUTPUT FORMAT (STRICT JSON ONLY):
+- Return ONLY a JSON object (no markdown, no code fences, no extra text).
+- The JSON object MUST contain exactly these keys:
+  - "answer": a concise string answer in the user's language
+  - "commit_ids": an array of 7-character commit hashes (strings) that are relevant
+- Use only commit hashes that appear in the provided history.
+
+Example:
+{"answer":"You fixed the login bug in commit abc1234","commit_ids":["abc1234"]}"""
 
         user_prompt = f"""Commit history (format: [hash] branch | prompt):
 
@@ -277,11 +283,11 @@ Example format:
 
 Question: {request.query}
 
-Remember to respond in JSON format with "answer" and "commit_ids" fields."""
+Return ONLY the JSON object with "answer" and "commit_ids" as specified."""
 
         try:
             if request.provider == "anthropic":
-                ai_response = await _call_anthropic(request.api_key, system_prompt, user_prompt)
+                raise HTTPException(status_code=400, detail="Anthropic provider is not supported for AI search.")
             elif request.provider == "openai":
                 ai_response = await _call_openai(request.api_key, system_prompt, user_prompt)
             else:
@@ -289,17 +295,38 @@ Remember to respond in JSON format with "answer" and "commit_ids" fields."""
 
             # Parse JSON response
             import json
+            import re
             try:
                 parsed = json.loads(ai_response)
-                answer = parsed.get("answer", ai_response)
-                commit_ids = parsed.get("commit_ids", [])
-            except json.JSONDecodeError:
-                # Fallback if AI doesn't return JSON
-                answer = ai_response
-                commit_ids = []
-                # Try to extract commit hashes from the response
-                import re
-                commit_ids = re.findall(r'\b[a-f0-9]{7}\b', ai_response.lower())
+            except json.JSONDecodeError as e:
+                raise HTTPException(status_code=502, detail=f"AI response was not valid JSON: {e.msg}")
+
+            if not isinstance(parsed, dict):
+                raise HTTPException(status_code=502, detail="AI response JSON must be an object.")
+
+            if "answer" not in parsed or "commit_ids" not in parsed:
+                raise HTTPException(status_code=502, detail="AI response JSON must contain 'answer' and 'commit_ids'.")
+
+            answer = parsed.get("answer")
+            commit_ids_raw = parsed.get("commit_ids")
+
+            if not isinstance(answer, str):
+                raise HTTPException(status_code=502, detail="AI response 'answer' must be a string.")
+
+            if not isinstance(commit_ids_raw, list):
+                raise HTTPException(status_code=502, detail="AI response 'commit_ids' must be an array.")
+
+            commit_ids = []
+            for item in commit_ids_raw:
+                if not isinstance(item, str):
+                    raise HTTPException(status_code=502, detail="AI response 'commit_ids' items must be strings.")
+                normalized = item.strip().lower()
+                if not re.fullmatch(r"[a-f0-9]{7}", normalized):
+                    raise HTTPException(
+                        status_code=502,
+                        detail=f"Invalid commit id '{item}'. Expected 7-char hex hash.",
+                    )
+                commit_ids.append(normalized)
 
             # Convert short hashes to full commit hashes
             full_commit_ids = []

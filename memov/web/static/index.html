@@ -372,7 +372,7 @@
             border-radius: 10px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             max-height: 350px;
-            overflow: hidden;
+            overflow: auto;
             z-index: 1000;
         }
 
@@ -464,6 +464,15 @@
             border-color: #4caf50;
         }
 
+        .search-result-item.ai-summary {
+            cursor: default;
+        }
+
+        .search-result-item.ai-summary:hover {
+            background: rgba(255, 255, 255, 0.6);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
         .search-result-item .item-header {
             display: flex;
             align-items: center;
@@ -507,6 +516,11 @@
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+        }
+
+        .search-result-item.ai-summary .item-prompt {
+            white-space: normal;
+            line-height: 1.5;
         }
 
         .search-result-item .item-files {
@@ -1421,6 +1435,11 @@
             text-overflow: ellipsis;
         }
 
+        .search-result-item.ai-summary .search-result-prompt {
+            white-space: normal;
+            line-height: 1.5;
+        }
+
         .search-result-match {
             background: #fff59d;
             padding: 0 2px;
@@ -1542,10 +1561,9 @@
                         </div>
                     </div>
                     <div class="ai-config" id="ai-config">
-                        <input type="password" id="inline-api-key" placeholder="API Key">
+                        <input type="password" id="inline-api-key" placeholder="OpenAI API Key">
                         <select id="inline-ai-provider">
                             <option value="openai">OpenAI</option>
-                            <option value="anthropic">Claude</option>
                         </select>
                     </div>
                     <div class="spacer"></div>
@@ -1624,10 +1642,9 @@
                 <!-- AI Search Panel -->
                 <div class="search-panel" id="panel-ai">
                     <div class="search-input-group">
-                        <input type="password" id="api-key-input" placeholder="Enter your API key (Claude/OpenAI)" class="search-input api-key-input">
+                        <input type="password" id="api-key-input" placeholder="Enter your OpenAI API key" class="search-input api-key-input">
                         <select id="ai-provider" class="search-select">
                             <option value="openai">OpenAI</option>
-                            <option value="anthropic">Claude</option>
                         </select>
                     </div>
                     <div class="search-input-group">
@@ -2739,44 +2756,43 @@
                     highlightSearchResults(commitIds);
                 }
 
-                // Build results HTML with AI response
-                const providerName = provider === 'anthropic' ? 'Claude' : 'OpenAI';
-                let resultsHtml = `
-                    <div class="ai-response-header">AI Response (${providerName})</div>
-                    <div class="ai-response">${escapeHtml(data.response)}</div>
-                `;
+                const providerName = 'OpenAI';
+                const answerText = (data.response || '').trim();
 
-                // Add commit list if there are relevant commits
-                if (commitIds.length > 0 && graphData && graphData.nodes) {
-                    // Get commit details
-                    const matchedNodes = commitIds.map(id => {
-                        return graphData.nodes.find(node => node.id === id);
-                    }).filter(node => node !== undefined);
+                const matchedNodes = (commitIds.length > 0 && graphData && graphData.nodes)
+                    ? commitIds.map(id => graphData.nodes.find(node => node.id === id)).filter(Boolean)
+                    : [];
 
-                    if (matchedNodes.length > 0) {
-                        const itemsHtml = matchedNodes.map(node => {
-                            return `
-                                <div class="search-result-item" onclick="jumpToSearchResult('${node.id}', true)">
-                                    <div class="search-result-header">
-                                        <span class="search-result-hash">${node.short_hash}</span>
-                                        ${node.branch ? `<span class="search-result-branch">${escapeHtml(node.branch)}</span>` : ''}
-                                        <span class="search-result-time">${formatTime(node.timestamp)}</span>
-                                    </div>
-                                    <div class="search-result-prompt">${escapeHtml((node.prompt || 'No prompt').substring(0, 100))}${(node.prompt || '').length > 100 ? '...' : ''}</div>
-                                </div>
-                            `;
-                        }).join('');
+                const answerHtml = answerText ? `
+                    <div class="search-result-item ai-summary">
+                        <div class="search-result-header">
+                            <span class="search-result-hash">AI</span>
+                            <span class="search-result-branch">${providerName}</span>
+                        </div>
+                        <div class="search-result-prompt">${escapeHtml(answerText)}</div>
+                    </div>
+                ` : '';
 
-                        resultsHtml += `
-                            <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid #444;">
-                                <div style="font-size: 12px; color: #666; margin-bottom: 12px;">${matchedNodes.length} relevant commit(s)</div>
-                                ${itemsHtml}
+                const itemsHtml = matchedNodes.map(node => {
+                    return `
+                        <div class="search-result-item" onclick="jumpToSearchResult('${node.id}', true)">
+                            <div class="search-result-header">
+                                <span class="search-result-hash">${node.short_hash}</span>
+                                ${node.branch ? `<span class="search-result-branch">${escapeHtml(node.branch)}</span>` : ''}
+                                <span class="search-result-time">${formatTime(node.timestamp)}</span>
                             </div>
-                        `;
-                    }
-                }
+                            <div class="search-result-prompt">${escapeHtml((node.prompt || 'No prompt').substring(0, 100))}${(node.prompt || '').length > 100 ? '...' : ''}</div>
+                        </div>
+                    `;
+                }).join('');
 
-                resultsDiv.innerHTML = resultsHtml;
+                const countHtml = `<div style="font-size: 12px; color: #666; margin-bottom: 12px;">${matchedNodes.length} relevant commit(s)</div>`;
+
+                if (!answerHtml && matchedNodes.length === 0) {
+                    resultsDiv.innerHTML = '<div class="search-results-placeholder">No matches found</div>';
+                } else {
+                    resultsDiv.innerHTML = `${answerHtml}${countHtml}${itemsHtml}`;
+                }
             } catch (e) {
                 resultsDiv.innerHTML = `<div class="search-error">Error: ${escapeHtml(e.message)}</div>`;
             }
@@ -3068,49 +3084,65 @@
                     return graphData.nodes.find(node => node.id === id);
                 }).filter(node => node !== undefined);
 
-                // Build results HTML
-                const providerName = provider === 'anthropic' ? 'Claude' : 'OpenAI';
-                let resultsHtml = `
-                    <div class="ai-header">
-                        <span>AI Response (${providerName})</span>
-                        <button class="close-btn" onclick="hideSearchResults()" title="Close">&times;</button>
+                const providerName = 'OpenAI';
+                const answerText = (data.response || '').trim();
+
+                const answerHtml = answerText ? `
+                    <div class="search-result-item ai-summary">
+                        <div class="item-header">
+                            <span class="item-hash">AI</span>
+                            <span class="item-type">ANSWER</span>
+                            <span class="item-branch">${providerName}</span>
+                        </div>
+                        <div class="item-prompt">${escapeHtml(answerText)}</div>
                     </div>
-                    <div class="ai-response">${escapeHtml(data.response)}</div>
-                `;
+                ` : '';
 
-                // Add commit list if there are matches
-                if (matchedNodes.length > 0) {
-                    const itemsHtml = matchedNodes.map(node => {
-                        const changedFiles = node.files && node.diff
-                            ? node.files.filter(f => node.diff[f] && node.diff[f].status !== 'unchanged').slice(0, 4)
-                            : [];
-
-                        return `
-                            <div class="search-result-item" onclick="scrollToNode('${node.id}')">
-                                <div class="search-result-header">
-                                    <span class="search-result-hash">${node.short_hash}</span>
-                                    ${node.branch ? `<span class="search-result-branch">${escapeHtml(node.branch)}</span>` : ''}
-                                    <span class="search-result-time">${formatTime(node.timestamp)}</span>
-                                </div>
-                                <div class="search-result-prompt">${escapeHtml((node.prompt || 'No prompt').substring(0, 100))}${(node.prompt || '').length > 100 ? '...' : ''}</div>
-                                ${changedFiles.length > 0 ? `<div class="search-result-files">${changedFiles.map(f => escapeHtml(f)).join(', ')}${node.files.length > 4 ? ` (+${node.files.length - 4} more)` : ''}</div>` : ''}
-                            </div>
-                        `;
+                const itemsHtml = matchedNodes.map(node => {
+                    const changedFiles = node.files && node.diff
+                        ? node.files.filter(f => node.diff[f] && node.diff[f].status !== 'unchanged').slice(0, 4)
+                        : [];
+                    const filesHtml = changedFiles.map(f => {
+                        return `<span class="item-file changed">${escapeHtml(f.split('/').pop())}</span>`;
                     }).join('');
+                    const moreCount = (node.files && node.diff)
+                        ? node.files.filter(f => node.diff[f] && node.diff[f].status !== 'unchanged').length - 4
+                        : 0;
 
-                    resultsHtml += `
-                        <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid #333;">
-                            <div style="font-size: 12px; color: #666; margin-bottom: 12px;">${matchedNodes.length} relevant commit(s)</div>
-                            ${itemsHtml}
+                    return `
+                        <div class="search-result-item" onclick="scrollToNode('${node.id}')">
+                            <div class="item-header">
+                                <span class="item-hash">${node.short_hash || node.id.slice(0, 7)}</span>
+                                <span class="item-type">${node.type || 'SNAP'}</span>
+                                ${node.branch ? `<span class="item-branch">${escapeHtml(node.branch)}</span>` : ''}
+                            </div>
+                            <div class="item-prompt">${escapeHtml((node.prompt || 'No prompt').substring(0, 100))}${(node.prompt || '').length > 100 ? '...' : ''}</div>
+                            <div class="item-files">
+                                ${filesHtml}
+                                ${moreCount > 0 ? `<span class="item-file">+${moreCount}</span>` : ''}
+                            </div>
                         </div>
                     `;
-                }
+                }).join('');
 
-                showSearchResults(resultsHtml);
+                const headerHtml = `
+                    <div class="search-results-header">
+                        <span class="count">${matchedNodes.length} match${matchedNodes.length > 1 ? 'es' : ''}</span>
+                        <button class="close-btn" onclick="hideSearchResults()" title="Close">&times;</button>
+                    </div>
+                `;
+
+                showSearchResults(`
+                    ${headerHtml}
+                    <div class="search-result-list">
+                        ${answerHtml}
+                        ${itemsHtml}
+                    </div>
+                `);
             } catch (e) {
                 showSearchResults(`
-                    <div class="ai-header">
-                        <span>Error</span>
+                    <div class="search-results-header">
+                        <span class="count">Error</span>
                         <button class="close-btn" onclick="hideSearchResults()" title="Close">&times;</button>
                     </div>
                     <div class="error">${escapeHtml(e.message)}</div>
