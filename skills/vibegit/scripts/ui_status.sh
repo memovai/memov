@@ -1,7 +1,8 @@
 #!/bin/bash
 # Check web UI server status
 # Usage: ./ui_status.sh
+#
+# Note: UI status is managed by MCP server in Claude Code.
 
-source "$(dirname "$0")/_check_deps.sh" && check_memov
-
-mem ui status "$@"
+echo "Web UI status is managed by MCP server."
+echo "Check if a browser tab is open with the memov UI."

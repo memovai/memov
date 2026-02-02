@@ -5,8 +5,8 @@
   "author": {
     "name": "Memov Team"
   },
-  "homepage": "https://github.com/ReScienceLab/memov",
-  "repository": "https://github.com/ReScienceLab/memov",
+  "homepage": "https://memov.ai",
+  "repository": "https://github.com/memovai/memov.git",
   "license": "MIT",
   "keywords": [
     "git",
