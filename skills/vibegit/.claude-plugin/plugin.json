@@ -1,0 +1,24 @@
+{
+  "name": "vibegit",
+  "version": "1.0.0",
+  "description": "AI-assisted version control using Memov. Automatically record prompts, responses, and code changes. View history, search semantically, and time-travel through your AI coding sessions.",
+  "author": {
+    "name": "Memov Team"
+  },
+  "homepage": "https://github.com/ReScienceLab/memov",
+  "repository": "https://github.com/ReScienceLab/memov",
+  "license": "MIT",
+  "keywords": [
+    "git",
+    "version-control",
+    "ai-coding",
+    "memov",
+    "history"
+  ],
+  "skills": [
+    "./SKILL.md"
+  ],
+  "commands": [
+    "./scripts/"
+  ]
+}

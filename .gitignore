@@ -1,6 +1,7 @@
 # Python
+.mem/
+.memignore
 __pycache__/
-.claude/
 *.py[cod]
 *$py.class
 *.so
