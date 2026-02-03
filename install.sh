@@ -242,16 +242,16 @@ install_single_binary() {
 # Verify installation
 verify_installation() {
     if command -v "$BINARY_NAME" &>/dev/null; then
-        success "MEM installed successfully!"
-        echo ""
-        "$INSTALL_DIR/$BINARY_NAME" version 2>/dev/null || "$INSTALL_DIR/$BINARY_NAME" --version 2>/dev/null || true
+        success "MEM installed successfully! $(cat "$LIB_DIR/VERSION" 2>/dev/null || echo "")"
         echo ""
         info "Run 'mem --help' to get started"
 
         # Show startup time hint for first run
-        echo ""
-        info "Note: First run may take a few seconds (macOS security scan)."
-        info "Subsequent runs will be fast (~0.2s)."
+        if [ "$(uname -s)" = "Darwin" ]; then
+            echo ""
+            info "Note: First run may take a few seconds (macOS security scan)."
+            info "Subsequent runs will be fast (~0.2s)."
+        fi
     else
         warn "MEM installed to $INSTALL_DIR/$BINARY_NAME but not in PATH"
         info "Add $INSTALL_DIR to your PATH or run: $INSTALL_DIR/$BINARY_NAME --help"
