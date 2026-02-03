@@ -200,12 +200,14 @@ install_onedir() {
         fi
     fi
 
-    # Install library directory
+    # Install library directory (ensure parent exists)
     if [ -w "$(dirname "$LIB_DIR")" ]; then
+        mkdir -p "$(dirname "$LIB_DIR")"
         cp -r "$source_dir" "$LIB_DIR"
         chmod +x "$LIB_DIR/mem"
     else
         warn "Need sudo to install to $LIB_DIR"
+        sudo mkdir -p "$(dirname "$LIB_DIR")"
         sudo cp -r "$source_dir" "$LIB_DIR"
         sudo chmod +x "$LIB_DIR/mem"
     fi
