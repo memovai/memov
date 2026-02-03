@@ -95,11 +95,11 @@ Priority: optional
 Section: devel
 Maintainer: Memov Team <contact@memov.dev>
 Filename: pool/main/m/mem/mem_0.0.8_amd64.deb
-Size: 16214552
-MD5sum: f4d6b4f3435e2c4308daa0a01aa199b6
-SHA1: cf983f082659bed954adaf8bd90978b40d1230cd
-SHA256: cbbbfcd930d49bf2b0b94f4100600df0c94b5a1b14d0e8b21087ffca0771c83a
-SHA512: 9739d9f79b5f40e24bcf906ad7bfbbc952748f25409bba8c997ad74cae245d31646e37db7a89b7a239e3489d9269c5fe5e1e16b8f2294e95ee706c36f7be21c1
+Size: 16212986
+MD5sum: 5227ad608e6c53f916eacec15ea75eee
+SHA1: c49bbab69fac1458174b45e1b40c5688a3088bc4
+SHA256: 0a44977b110aa178c174b632c18adf52ccde851c2ff420f58e5090f87a191e05
+SHA512: f699f31fbd6873a736d4eed38c999d907f2e9772f568f45cfbaf80a0cea9be06a24154d013e9c429d84c88eeef1508ca83575fb92ed6aad3a5d5d62f7e37fe8b
 Homepage: https://github.com/memovai/memov
 Description: AI-powered version control tool - memory layer for AI coding agents
 
