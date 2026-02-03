@@ -68,6 +68,14 @@ jobs:
           ls -la mem/
           chmod +x mem/mem
 
+      - name: Strip invalid runpaths from shared libraries
+        run: |
+          dnf install -y patchelf
+          # PyInstaller bundles .so files with runpaths pointing to the GitHub Actions
+          # runner's Python path (/opt/hostedtoolcache/...), which is invalid on target
+          # systems. Since onedir packages are self-contained, we can safely remove them.
+          find mem/ -name '*.so*' -exec patchelf --remove-rpath {} \; 2>/dev/null || true
+
       - name: Build RPM package
         run: |
           VERSION="${{ steps.version.outputs.rpm_version }}"
