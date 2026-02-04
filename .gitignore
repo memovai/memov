@@ -179,3 +179,4 @@ tests/integration/test_playground/*.txt
 # mem cache
 .mem
 .mcp.json
+.claude

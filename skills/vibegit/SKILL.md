@@ -18,7 +18,7 @@ curl -fsSL https://raw.githubusercontent.com/memovai/memov/main/install.sh | bas
 ### Verify Installation
 
 ```bash
-mem --version
+mem
 ```
 
 ### Initialize in Your Project
@@ -28,6 +28,18 @@ cd your-project
 mem init
 ```
 
+## How to Use
+
+There are two ways to use VibeGit:
+
+1. **Skill scripts (this folder)**: run `./scripts/*.sh` to call the local `mem` CLI.
+2. **MCP tools (Claude Code)**: use the MCP server tools like `mcp__mem-mcp__snap`.
+
+They are related but not identical:
+
+- Skill scripts are a thin wrapper over `mem` CLI.
+- MCP tools may add extra behavior (e.g. auto-track untracked files, auto-sync for RAG features).
+
 ## Commands
 
 All commands should be run from the skill directory using the scripts provided.
@@ -36,7 +48,9 @@ All commands should be run from the skill directory using the scripts provided.
 
 | Script | Description | Usage |
 |--------|-------------|-------|
-| `snap.sh` | Record a code change | `./scripts/snap.sh --files "file1.py,file2.py" --prompt "What was asked" --response "What was done"` |
+| `init.sh` | Initialize memov in a project | `./scripts/init.sh` |
+| `track.sh` | Track new files | `./scripts/track.sh file1.py file2.py -p "..." -r "..."` |
+| `snap.sh` | Record a code change | `./scripts/snap.sh --files "file1.py,file2.py" -p "What was asked" -r "What was done"` |
 | `history.sh` | View AI coding history | `./scripts/history.sh [--limit 20]` |
 | `show.sh` | Show commit details | `./scripts/show.sh <commit_hash>` |
 | `status.sh` | Check working directory status | `./scripts/status.sh` |
@@ -51,11 +65,18 @@ All commands should be run from the skill directory using the scripts provided.
 
 ### Web UI
 
+Before running `mem ui start`, confirm where you want to open the UI:
+
+- Which project directory should the UI read from?
+  - If not sure, run `pwd` and use `--loc <that path>`.
+
+Suggested confirmation prompt:
+
 | Script | Description | Usage |
 |--------|-------------|-------|
-| `ui_start.sh` | Start visual history browser | `./scripts/ui_start.sh [--port 38888]` |
-| `ui_stop.sh` | Stop the web server | `./scripts/ui_stop.sh` |
-| `ui_status.sh` | Check server status | `./scripts/ui_status.sh` |
+| `ui_start.sh` | Start visual history browser | `./scripts/ui_start.sh [--loc /path] [--port 38888] [--foreground]` |
+| `ui_stop.sh` | Stop the web server | `./scripts/ui_stop.sh [--loc /path]` |
+| `ui_status.sh` | Check server status | `./scripts/ui_status.sh [--loc /path]` |
 
 ## Automatic Recording
 
@@ -75,9 +96,17 @@ After every AI coding session, record the interaction:
 - `--response` or `-r`: Summary of what was done
 - `--by-user` or `-u`: Mark as human edit (vs AI)
 
+## RAG Features (Optional)
+
+Some features (semantic search, validate, vibe_debug/vibe_search tools) require installing extra dependencies.
+
+- CLI: install with `pip install memov[rag]` then run `mem sync` once.
+- MCP: those tools may not appear unless RAG dependencies are installed.
+
 ## Examples
 
 ### Record a bug fix
+
 ```bash
 ./scripts/snap.sh \
   --files "auth.py" \
@@ -86,17 +115,13 @@ After every AI coding session, record the interaction:
 ```
 
 ### View recent history
+
 ```bash
 ./scripts/history.sh --limit 10
 ```
 
-### Open visual timeline
-```bash
-./scripts/ui_start.sh
-# Opens browser at http://localhost:38888
-```
-
 ### Jump to previous state
+
 ```bash
 ./scripts/jump.sh a1b2c3d
 ```
@@ -123,9 +148,6 @@ mem show a1b2c3d
 
 # Jump to snapshot
 mem jump a1b2c3d
-
-# Start Web UI
-mem ui
 ```
 
 ## What Gets Recorded
@@ -143,7 +165,6 @@ Each snapshot captures:
 - **Never lose context**: Every AI interaction is recorded
 - **Time travel**: Jump to any point in your coding history
 - **Understand changes**: See not just what changed, but why
-- **Visual timeline**: Browse history in a web UI
 
 ## Troubleshooting
 

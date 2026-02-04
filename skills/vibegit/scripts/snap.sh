@@ -4,10 +4,35 @@
 
 source "$(dirname "$0")/_check_deps.sh" && check_memov
 
-FILES=""
-PROMPT=""
-RESPONSE=""
-BY_USER=""
+ARGS=()
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --files)
+            ARGS+=("--files" "$2")
+            shift 2
+            ;;
+        -p|--prompt)
+            ARGS+=("-p" "$2")
+            shift 2
+            ;;
+        -r|--response)
+            ARGS+=("-r" "$2")
+            shift 2
+            ;;
+        -u|--by-user)
+            ARGS+=("--by_user")
+            shift
+            ;;
+        *)
+            echo "Unknown option: $1"
+            exit 1
+            ;;
+    esac
+done
+
+echo "Running: mem snap ${ARGS[*]}"
+mem snap "${ARGS[@]}"
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -52,4 +77,8 @@ if [ -n "$BY_USER" ]; then
     CMD="$CMD $BY_USER"
 fi
 
+echo "Running: $CMD"
 eval $CMD
+
+echo ""
+echo "Tip: for semantic search/validate features, install memov[rag] and run: mem sync"

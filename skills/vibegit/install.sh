@@ -9,7 +9,7 @@ echo "Installing memov..."
 # Check if already installed
 if command -v mem &> /dev/null; then
     echo "memov is already installed!"
-    mem --version 2>/dev/null || true
+    mem 2>/dev/null || true
     exit 0
 fi
 
