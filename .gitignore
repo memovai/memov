@@ -1,6 +1,7 @@
 # Python
+.mem/
+.memignore
 __pycache__/
-.claude/
 *.py[cod]
 *$py.class
 *.so
@@ -178,3 +179,4 @@ tests/integration/test_playground/*.txt
 # mem cache
 .mem
 .mcp.json
+.claude
