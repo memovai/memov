@@ -81,7 +81,8 @@
             letter-spacing: 0.5px;
         }
 
-        .branch-item {
+        .branch-item,
+        .skill-item {
             padding: 6px 10px;
             margin-bottom: 2px;
             border-radius: 4px;
@@ -90,22 +91,26 @@
             color: #555;
         }
 
-        .branch-item:hover {
+        .branch-item:hover,
+        .skill-item:hover {
             background: #f0f0f0;
         }
 
-        .branch-item.current {
+        .branch-item.current,
+        .skill-item.current {
             background: #333;
             color: white;
         }
 
-        .branch-item .count {
+        .branch-item .count,
+        .skill-item .count {
             float: right;
             color: #aaa;
             font-size: 11px;
         }
 
-        .branch-item.current .count {
+        .branch-item.current .count,
+        .skill-item.current .count {
             color: #ccc;
         }
 
@@ -1135,6 +1140,52 @@
             border-color: #333;
         }
 
+        .all-view-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .view-switch {
+            display: flex;
+            flex: 1;
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 2px;
+        }
+
+        .view-switch-btn {
+            flex: 1;
+            padding: 6px 8px;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            transition: all 0.15s;
+        }
+
+        .view-switch-btn:hover {
+            color: #333;
+        }
+
+        .view-switch-btn.active {
+            background: #fff;
+            color: #111;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .view-switch-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
         /* Tree view container */
         .tree-view {
             padding: 20px;
@@ -1231,6 +1282,287 @@
             font-size: 11px;
             fill: #999;
             text-anchor: middle;
+        }
+
+        /* Skills view */
+        .skills-view {
+            padding: 20px;
+        }
+
+        .skills-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .skills-toolbar .hint {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 16px;
+        }
+
+        .skills-card {
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            padding: 14px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+        }
+
+        .skills-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            border-color: #e0e0e0;
+        }
+
+        .skills-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .skills-card-icon {
+            width: 34px;
+            height: 28px;
+            border-radius: 6px;
+            background: linear-gradient(135deg, #f7d774, #f2b84b);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px;
+        }
+
+        .skills-card-icon img {
+            width: 18px;
+            height: 18px;
+            display: block;
+        }
+
+        .skills-card-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .skills-card-summary {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.4;
+            margin-bottom: 10px;
+            min-height: 36px;
+        }
+
+        .skills-card-meta {
+            font-size: 11px;
+            color: #999;
+        }
+
+        .skills-card-meta + .skills-card-meta {
+            margin-top: 6px;
+        }
+
+        .skills-tag {
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 999px;
+            color: #fff;
+            white-space: nowrap;
+        }
+
+        .skill-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+            vertical-align: middle;
+            opacity: 0.6;
+        }
+
+        .skills-label-text {
+            font-size: 11px;
+        }
+
+        .skills-modal-content {
+            max-width: 720px;
+        }
+
+        .skills-detail-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .skills-detail-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #222;
+        }
+
+        .skills-detail-section {
+            margin-bottom: 16px;
+        }
+
+        .skills-detail-section h4 {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: #888;
+            margin: 0 0 6px 0;
+        }
+
+        .skills-detail-section p {
+            font-size: 13px;
+            color: #444;
+            line-height: 1.5;
+            margin: 0;
+            white-space: pre-wrap;
+        }
+
+        .skills-commit-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .skills-commit-item {
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 10px 12px;
+            cursor: pointer;
+            transition: border-color 0.15s, background 0.15s;
+        }
+
+        .skills-commit-item:hover {
+            border-color: #ccc;
+            background: #fafafa;
+        }
+
+        .skills-commit-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .skills-commit-hash {
+            font-family: 'SF Mono', Consolas, monospace;
+            font-size: 11px;
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #555;
+        }
+
+        .skills-commit-branch {
+            font-size: 10px;
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        .skills-commit-time {
+            font-size: 11px;
+            color: #aaa;
+            margin-left: auto;
+        }
+
+        .skills-commit-prompt {
+            font-size: 12px;
+            color: #555;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .skills-pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .skills-pagination .page-info {
+            font-size: 12px;
+            color: #777;
+        }
+
+
+        .coachmark {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            color: #1f1f1f;
+            padding: 12px 14px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            border: 1px solid rgba(0,0,0,0.06);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+            z-index: 2000;
+            opacity: 0;
+            transform: translateY(6px);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            pointer-events: none;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .coachmark.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .coachmark::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 8px;
+            width: 3px;
+            height: calc(100% - 16px);
+            background: linear-gradient(180deg, #0a84ff, #5ac8fa);
+            border-radius: 3px;
+        }
+
+        .coachmark::after {
+            content: '';
+            position: absolute;
+            top: -7px;
+            left: 18px;
+            border-width: 0 7px 7px 7px;
+            border-style: solid;
+            border-color: transparent transparent rgba(255, 255, 255, 0.95) transparent;
+            filter: drop-shadow(0 -1px 1px rgba(0,0,0,0.08));
+        }
+
+        .pulse-ring {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: 2px solid rgba(10, 132, 255, 0.9);
+            animation: pulse 1.4s infinite;
+            z-index: 2000;
+            pointer-events: none;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            70% { transform: scale(2.2); opacity: 0; }
+            100% { opacity: 0; }
         }
 
         /* Header right section */
@@ -1510,7 +1842,12 @@
             <div class="sidebar-header">
                 <h2>Branches</h2>
             </div>
-            <button class="view-all-btn" id="view-all-btn" onclick="showAllTree()">ALL</button>
+            <div class="all-view-bar" id="all-view-bar">
+                <div class="view-switch" id="view-switch">
+                    <button class="view-switch-btn active" id="all-tree-btn" onclick="showAllTree(true)">Tree</button>
+                    <button class="view-switch-btn" id="all-skills-btn" onclick="showAllSkills(true)">Skills</button>
+                </div>
+            </div>
             <div id="branches-list">
                 <div class="loading">Loading...</div>
             </div>
@@ -1616,6 +1953,20 @@
         </div>
     </div>
 
+    <!-- Skills Detail Modal -->
+    <div class="modal" id="skills-modal">
+        <div class="modal-content skills-modal-content">
+            <div class="modal-header">
+                <h3>Feature Details</h3>
+                <button class="modal-close" onclick="closeSkillsModal()">&times;</button>
+            </div>
+            <div class="node-detail-body" id="skills-detail-body"></div>
+        </div>
+    </div>
+
+    <div class="coachmark" id="skills-coachmark"></div>
+    <div class="pulse-ring" id="skills-pulse"></div>
+
     <!-- Search Modal -->
     <div class="modal" id="search-modal">
         <div class="modal-content search-modal-content">
@@ -1670,8 +2021,46 @@
         let expandedNode = null;
         let viewMode = 'branch'; // 'branch' | 'all'
         let currentBranch = null; // Currently selected branch (null = all)
+        let allViewMode = 'tree'; // 'tree' | 'skills' when viewMode === 'all'
         let searchMode = 'regex'; // 'regex' | 'ai'
         let highlightedNodes = []; // Currently highlighted node IDs
+        let skillsData = null;
+        let skillsLoading = false;
+        let skillsPage = 1;
+        const skillsPageSize = 8;
+        let skillsGuideStep = 0;
+        let skillsFilter = 'ALL';
+        const skillsColorPalette = ['#9FB3C8', '#B3C7A5', '#C7B59B', '#BFAFCB', '#B7C4C7', '#C9B9B2'];
+
+        function renderSkillsSidebarPlaceholder() {
+            const container = document.getElementById('branches-list');
+            if (!container) return;
+            container.innerHTML = '<div class="loading">Loading skills...</div>';
+        }
+
+        function renderSkillsSidebar(features) {
+            const container = document.getElementById('branches-list');
+            if (!container) return;
+            const totalCount = features.length;
+            const items = [
+                {
+                    name: 'ALL',
+                    count: totalCount
+                },
+                ...features.map(f => ({
+                    name: getFeatureLabel(f),
+                    count: (f.commit_ids || []).length
+                }))
+            ];
+            container.innerHTML = items.map(item => `
+                <div class="skill-item ${skillsFilter === item.name ? 'current' : ''}" data-skill="${item.name}"
+                    onclick="setSkillsFilter('${item.name.replace(/'/g, '\\\\\'')}')">
+                    ${item.name === 'ALL' ? '' : `<span class="skill-dot" style="background:${getFeatureColor(item.name)};"></span>`}
+                    ${escapeHtml(item.name)}
+                    <span class="count">${item.count}</span>
+                </div>
+            `).join('');
+        }
 
         // Build nodeBranch mapping: determine which branch each commit belongs to
         // Shared commits belong to the "parent" branch (main first, then alphabetically)
@@ -1758,7 +2147,7 @@
                 renderBranches(branches);
 
                 // Default to ALL tree view
-                showAllTree();
+                showAllTree(false);
 
                 // Defer tooltip initialization - render nodes first
                 if (window.requestIdleCallback) {
@@ -1792,14 +2181,32 @@
                 }
             }
 
-            container.innerHTML = Object.entries(branches.branches)
-                .map(([name, hash]) => `
-                    <div class="branch-item ${name === branches.current ? 'active' : ''}"
-                         onclick="showBranchView('${name}')">
-                        ${name}
-                        <span class="count">${branchCommitCounts[name] || 0}</span>
-                    </div>
-                `).join('');
+            const totalCount = Object.values(branchCommitCounts).reduce((a, b) => a + b, 0);
+            const allItem = `
+                <div class="branch-item ${viewMode === 'all' ? 'current' : ''}" data-branch="__all__" onclick="showAllTree(true)">
+                    ALL
+                    <span class="count">${totalCount}</span>
+                </div>
+            `;
+
+            const branchEntries = Object.entries(branches.branches);
+            const ordered = [];
+            const mainEntry = branchEntries.find(([name]) => name === 'main');
+            if (mainEntry) ordered.push(mainEntry);
+            branchEntries
+                .filter(([name]) => name !== 'main')
+                .sort(([a], [b]) => a.localeCompare(b))
+                .forEach(entry => ordered.push(entry));
+
+            const branchItems = ordered.map(([name, hash]) => `
+                <div class="branch-item ${name === branches.current && viewMode !== 'all' ? 'current' : ''}" data-branch="${name}"
+                     onclick="showBranchView('${name}')">
+                    ${name}
+                    <span class="count">${branchCommitCounts[name] || 0}</span>
+                </div>
+            `).join('');
+
+            container.innerHTML = `${allItem}${branchItems}`;
         }
 
         function renderTimeline(data) {
@@ -1973,15 +2380,21 @@
             }
         }
 
-        function showAllTree() {
+        function showAllTree(userInitiated = false) {
             viewMode = 'all';
             currentBranch = null;
+            allViewMode = 'tree';
+            hideCoachmark();
+            const sidebarTitle = document.querySelector('.sidebar-header h2');
+            if (sidebarTitle) sidebarTitle.textContent = 'Branches';
 
             // Update button states
-            document.getElementById('view-all-btn').classList.add('active');
+            document.getElementById('all-tree-btn')?.classList.add('active');
+            document.getElementById('all-skills-btn')?.classList.remove('active');
             document.querySelectorAll('.branch-item').forEach(item => {
                 item.classList.remove('current');
             });
+            updateViewSwitchState();
 
             // Update header
             document.getElementById('branch-info').textContent = 'All Branches';
@@ -1994,6 +2407,34 @@
 
             // Render tree view
             renderTreeView();
+            maybeShowSkillsGuideStep(1);
+            selectBranchItem('__all__');
+            if (branchesData) {
+                renderBranches(branchesData);
+            }
+        }
+
+        function showAllSkills(userInitiated = false) {
+            viewMode = 'all';
+            currentBranch = null;
+            allViewMode = 'skills';
+            hideCoachmark();
+            skillsFilter = 'ALL';
+            const sidebarTitle = document.querySelector('.sidebar-header h2');
+            if (sidebarTitle) sidebarTitle.textContent = 'Skills';
+
+            document.getElementById('all-tree-btn')?.classList.remove('active');
+            document.getElementById('all-skills-btn')?.classList.add('active');
+            document.querySelectorAll('.branch-item').forEach(item => {
+                item.classList.remove('current');
+            });
+            updateViewSwitchState();
+
+            document.getElementById('branch-info').textContent = 'All Branches';
+            updateSearchPlaceholder();
+            clearHighlights();
+            renderSkillsSidebarPlaceholder();
+            renderSkillsView();
         }
 
         function showBranchView(branchName) {
@@ -2003,7 +2444,9 @@
             }
             viewMode = 'branch';
             currentBranch = branchName;
-            document.getElementById('view-all-btn').classList.remove('active');
+            updateViewSwitchState();
+            const sidebarTitle = document.querySelector('.sidebar-header h2');
+            if (sidebarTitle) sidebarTitle.textContent = 'Branches';
 
             // Update search placeholder
             updateSearchPlaceholder();
@@ -2012,6 +2455,26 @@
             clearHighlights();
 
             filterBranch(branchName);
+            selectBranchItem(branchName);
+            if (branchesData) {
+                renderBranches(branchesData);
+            }
+        }
+
+        function updateViewSwitchState() {
+            const barEl = document.getElementById('all-view-bar');
+            if (!barEl) return;
+            barEl.style.display = 'flex';
+            document.getElementById('all-tree-btn')?.classList.toggle('active', allViewMode === 'tree');
+            document.getElementById('all-skills-btn')?.classList.toggle('active', allViewMode === 'skills');
+        }
+
+        function selectBranchItem(name) {
+            document.querySelectorAll('.branch-item').forEach(item => {
+                item.classList.remove('current');
+            });
+            const el = document.querySelector(`.branch-item[data-branch="${name}"]`);
+            if (el) el.classList.add('current');
         }
 
         function renderTreeView() {
@@ -2177,6 +2640,341 @@
 
         }
 
+        function getOpenAIKey() {
+            const inlineKey = document.getElementById('inline-api-key')?.value?.trim();
+            if (inlineKey) return inlineKey;
+            const modalKey = document.getElementById('api-key-input')?.value?.trim();
+            if (modalKey) return modalKey;
+            return '';
+        }
+
+        function getFeatureColor(name) {
+            if (!name || name === 'ALL') return '#999';
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) {
+                hash = ((hash << 5) - hash) + name.charCodeAt(i);
+                hash |= 0;
+            }
+            const idx = Math.abs(hash) % skillsColorPalette.length;
+            return skillsColorPalette[idx];
+        }
+
+        function getFeatureLabel(feature) {
+            return (feature && (feature.skill_label || feature.name)) ? (feature.skill_label || feature.name) : 'Feature';
+        }
+
+        function truncateText(text, maxLen) {
+            if (!text) return '';
+            return text.length > maxLen ? `${text.slice(0, maxLen)}…` : text;
+        }
+
+        function sortSkillsBySize(features) {
+            return [...features].sort((a, b) => {
+                const countA = (a.commit_ids || []).length;
+                const countB = (b.commit_ids || []).length;
+                return countB - countA;
+            });
+        }
+
+        async function fetchSkillsData() {
+            const res = await fetch('/api/skills');
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.detail || 'Failed to load skills');
+            }
+            return data.features || [];
+        }
+
+        async function refreshSkillsData() {
+            const apiKey = getOpenAIKey();
+            if (!apiKey) {
+                throw new Error('Please enter your OpenAI API key in the search bar.');
+            }
+            const res = await fetch('/api/skills/refresh', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ api_key: apiKey, force: true })
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.detail || 'Skills generation failed');
+            }
+            return data.features || [];
+        }
+
+        function renderSkillsCards(features) {
+            const cardsHtml = features.map((feature, idx) => {
+                const commitCount = feature.commit_ids ? feature.commit_ids.length : 0;
+                const summary = feature.skill_content || feature.summary || 'No summary available';
+                const label = getFeatureLabel(feature);
+                const color = getFeatureColor(label);
+                return `
+                    <div class="skills-card" onclick="openSkillsModal(${feature.id})">
+                        <div class="skills-card-header">
+                            <div class="skills-card-icon"><img src="/static/memov-icon.svg" alt="Skill"></div>
+                            <div class="skills-card-title">${escapeHtml(feature.skill_title || feature.name || `Feature ${idx + 1}`)}</div>
+                        </div>
+                        <div class="skills-card-summary">${escapeHtml(truncateText(summary, 80))}</div>
+                        <div class="skills-card-meta">${commitCount} commit${commitCount !== 1 ? 's' : ''}</div>
+                        <div class="skills-card-meta">
+                            <span class="skill-dot" style="background:${color};"></span>
+                            <span class="skills-label-text" style="color:${color};">${escapeHtml(truncateText(label, 20))}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            return `<div class="skills-grid">${cardsHtml}</div>`;
+        }
+
+        function renderSkillsPagination(totalItems) {
+            const totalPages = Math.max(1, Math.ceil(totalItems / skillsPageSize));
+            if (skillsPage > totalPages) {
+                skillsPage = totalPages;
+            }
+            const prevDisabled = skillsPage <= 1 ? 'disabled' : '';
+            const nextDisabled = skillsPage >= totalPages ? 'disabled' : '';
+            return `
+                <div class="skills-pagination">
+                    <button class="btn btn-secondary" ${prevDisabled} onclick="changeSkillsPage(-1)">Prev</button>
+                    <span class="page-info">Page ${skillsPage} of ${totalPages}</span>
+                    <button class="btn btn-secondary" ${nextDisabled} onclick="changeSkillsPage(1)">Next</button>
+                </div>
+            `;
+        }
+
+        function setSkillsFilter(name) {
+            skillsFilter = name;
+            skillsPage = 1;
+            if (skillsData && viewMode === 'all' && allViewMode === 'skills') {
+                const container = document.getElementById('timeline');
+                renderSkillsSidebar(skillsData);
+                container.innerHTML = `
+                    <div class="skills-view">
+                        <div class="skills-toolbar">
+                            <div class="hint">Skills view is generated from your commit history.</div>
+                            <button class="btn btn-secondary" id="skills-generate-btn" onclick="generateSkills()">Regenerate</button>
+                        </div>
+                        ${renderSkillsViewContent(skillsData)}
+                    </div>
+                `;
+                maybeShowSkillsGuideStep(2);
+            }
+        }
+
+        function renderSkillsViewContent(features) {
+            const filtered = skillsFilter === 'ALL'
+                ? features
+                : features.filter(f => getFeatureLabel(f) === skillsFilter);
+            const totalItems = filtered.length;
+            const totalPages = Math.max(1, Math.ceil(totalItems / skillsPageSize));
+            if (skillsPage > totalPages) skillsPage = totalPages;
+            const start = (skillsPage - 1) * skillsPageSize;
+            const paged = filtered.slice(start, start + skillsPageSize);
+            return `
+                ${renderSkillsCards(paged)}
+                ${totalItems > skillsPageSize ? renderSkillsPagination(totalItems) : ''}
+            `;
+        }
+
+        function changeSkillsPage(delta) {
+            skillsPage = Math.max(1, skillsPage + delta);
+            if (skillsData && viewMode === 'all' && allViewMode === 'skills') {
+                const container = document.getElementById('timeline');
+                container.innerHTML = `
+                    <div class="skills-view">
+                        <div class="skills-toolbar">
+                            <div class="hint">Skills view is generated from your commit history.</div>
+                            <button class="btn btn-secondary" id="skills-generate-btn" onclick="generateSkills()">Regenerate</button>
+                        </div>
+                        ${renderSkillsViewContent(skillsData)}
+                    </div>
+                `;
+                maybeShowSkillsGuideStep(2);
+            }
+        }
+
+        async function renderSkillsView() {
+            skillsFilter = 'ALL';
+            const container = document.getElementById('timeline');
+            container.innerHTML = `
+                <div class="skills-view">
+                    <div class="skills-toolbar">
+                        <div class="hint">AI clusters your history into features and summarizes skills.</div>
+                        <button class="btn" id="skills-generate-btn" onclick="generateSkills()">Generate</button>
+                    </div>
+                    <div class="loading">Loading skills...</div>
+                </div>
+            `;
+
+            if (skillsLoading) return;
+            skillsLoading = true;
+            try {
+                const features = sortSkillsBySize(await fetchSkillsData());
+                skillsData = features;
+                if (!features || features.length === 0) {
+                    renderSkillsSidebar([]);
+                    container.innerHTML = `
+                        <div class="skills-view">
+                            <div class="skills-toolbar">
+                                <div class="hint">No skills generated yet.</div>
+                                <button class="btn" id="skills-generate-btn" onclick="generateSkills()">Generate</button>
+                            </div>
+                            <div class="empty"><h3>Nothing to show yet</h3></div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                renderSkillsSidebar(features);
+                container.innerHTML = `
+                    <div class="skills-view">
+                        <div class="skills-toolbar">
+                            <div class="hint">Skills view is generated from your commit history.</div>
+                            <button class="btn btn-secondary" id="skills-generate-btn" onclick="generateSkills()">Regenerate</button>
+                        </div>
+                        ${renderSkillsViewContent(features)}
+                    </div>
+                `;
+                maybeShowSkillsGuideStep(2);
+            } catch (e) {
+                container.innerHTML = `
+                    <div class="skills-view">
+                        <div class="skills-toolbar">
+                            <div class="hint">Failed to load skills.</div>
+                            <button class="btn" id="skills-generate-btn" onclick="generateSkills()">Generate</button>
+                        </div>
+                        <div class="search-error">${escapeHtml(e.message)}</div>
+                    </div>
+                `;
+            } finally {
+                skillsLoading = false;
+            }
+        }
+
+        async function generateSkills() {
+            completeSkillsGuide();
+            const container = document.getElementById('timeline');
+            container.innerHTML = `
+                <div class="skills-view">
+                    <div class="skills-toolbar">
+                        <div class="hint">Generating skills with OpenAI...</div>
+                    </div>
+                    <div class="loading">
+                        <div class="search-loading-spinner"></div>
+                        This may take a moment.
+                    </div>
+                </div>
+            `;
+            try {
+                const features = sortSkillsBySize(await refreshSkillsData());
+                skillsData = features;
+                skillsFilter = 'ALL';
+                if (!features || features.length === 0) {
+                    renderSkillsSidebar([]);
+                    container.innerHTML = `
+                        <div class="skills-view">
+                            <div class="skills-toolbar">
+                                <div class="hint">No skills generated yet.</div>
+                                <button class="btn" id="skills-generate-btn" onclick="generateSkills()">Generate</button>
+                            </div>
+                            <div class="empty"><h3>Nothing to show yet</h3></div>
+                        </div>
+                    `;
+                    return;
+                }
+                skillsPage = 1;
+                renderSkillsSidebar(features);
+                container.innerHTML = `
+                    <div class="skills-view">
+                        <div class="skills-toolbar">
+                            <div class="hint">Skills view is generated from your commit history.</div>
+                            <button class="btn btn-secondary" id="skills-generate-btn" onclick="generateSkills()">Regenerate</button>
+                        </div>
+                        ${renderSkillsViewContent(features)}
+                    </div>
+                `;
+                maybeShowSkillsGuideStep(2);
+            } catch (e) {
+                container.innerHTML = `
+                    <div class="skills-view">
+                        <div class="skills-toolbar">
+                            <div class="hint">Unable to generate skills.</div>
+                            <button class="btn" id="skills-generate-btn" onclick="generateSkills()">Retry</button>
+                        </div>
+                        <div class="search-error">${escapeHtml(e.message)}</div>
+                    </div>
+                `;
+            }
+        }
+
+        function openSkillsModal(featureId) {
+            const feature = (skillsData || []).find(f => f.id === featureId);
+            if (!feature) return;
+
+            const skillTitle = feature.skill_title || feature.name || 'Feature';
+            const skillContent = feature.skill_content || feature.summary || '';
+            const skillLabel = feature.skill_label || feature.name || 'Feature';
+            const commits = feature.commit_ids || [];
+
+            const commitItems = commits.map(commitId => {
+                const node = graphData?.nodes?.find(n => n.id === commitId);
+                const shortHash = node?.short_hash || commitId.substring(0, 7);
+                const branch = node?.branch;
+                const prompt = node?.prompt || 'No prompt';
+                const time = node?.timestamp ? formatTime(node.timestamp) : '';
+                return `
+                    <div class="skills-commit-item" onclick="openCommitFromSkills('${commitId}')">
+                        <div class="skills-commit-header">
+                            <span class="skills-commit-hash">${shortHash}</span>
+                            ${branch ? `<span class="skills-commit-branch">${escapeHtml(branch)}</span>` : ''}
+                            <span class="skills-commit-time">${time}</span>
+                        </div>
+                        <div class="skills-commit-prompt">${escapeHtml(prompt)}</div>
+                    </div>
+                `;
+            }).join('');
+
+            const commitListHtml = commits.length > 0 ? `
+                <div class="skills-commit-list">${commitItems}</div>
+            ` : '<div class="empty">No commits linked</div>';
+
+            const html = `
+                <div class="skills-detail-header">
+                    <div class="skills-card-icon"><img src="/static/memov-icon.svg" alt="Skill"></div>
+                    <div class="skills-detail-title">${escapeHtml(skillTitle)}</div>
+                </div>
+                <div class="skills-detail-section">
+                    <h4>Feature</h4>
+                    <p>${escapeHtml(feature.name)}</p>
+                </div>
+                <div class="skills-detail-section">
+                    <h4>Summary</h4>
+                    <p>${escapeHtml(skillContent)}</p>
+                </div>
+                <div class="skills-detail-section">
+                    <h4>Label</h4>
+                    <p>${escapeHtml(skillLabel)}</p>
+                </div>
+                <div class="skills-detail-section">
+                    <h4>Commits</h4>
+                    ${commitListHtml}
+                </div>
+            `;
+
+            document.getElementById('skills-detail-body').innerHTML = html;
+            document.getElementById('skills-modal').classList.add('show');
+        }
+
+        function closeSkillsModal() {
+            document.getElementById('skills-modal').classList.remove('show');
+        }
+
+        function openCommitFromSkills(commitId) {
+            closeSkillsModal();
+            jumpToSearchResult(commitId);
+        }
+
         function updateTooltipPosition(e, tooltip) {
             const tooltipRect = tooltip.getBoundingClientRect();
             let x = e.clientX - tooltipRect.width / 2;
@@ -2193,6 +2991,52 @@
 
             tooltip.style.left = x + 'px';
             tooltip.style.top = y + 'px';
+        }
+
+        function showCoachmark(targetEl, message) {
+            const coach = document.getElementById('skills-coachmark');
+            const pulse = document.getElementById('skills-pulse');
+            if (!coach || !pulse || !targetEl) return;
+
+            const rect = targetEl.getBoundingClientRect();
+            const top = rect.bottom + 10 + window.scrollY;
+            const left = rect.left + window.scrollX;
+
+            coach.textContent = message;
+            coach.style.top = `${top}px`;
+            coach.style.left = `${left}px`;
+            coach.classList.add('show');
+
+            pulse.style.top = `${rect.top + rect.height / 2 + window.scrollY - 6}px`;
+            pulse.style.left = `${rect.left + rect.width / 2 + window.scrollX - 6}px`;
+            pulse.style.display = 'block';
+        }
+
+        function hideCoachmark() {
+            const coach = document.getElementById('skills-coachmark');
+            const pulse = document.getElementById('skills-pulse');
+            if (coach) coach.classList.remove('show');
+            if (pulse) pulse.style.display = 'none';
+        }
+
+        function maybeShowSkillsGuideStep(step) {
+            if (localStorage.getItem('memovSkillsGuideSeen') === '1') return;
+            skillsGuideStep = step;
+
+            if (step === 1) {
+                const skillsBtn = document.getElementById('all-skills-btn');
+                showCoachmark(skillsBtn, 'Try Skills for a clean, AI‑curated overview.');
+            } else if (step === 2) {
+                const generateBtn = document.getElementById('skills-generate-btn');
+                if (!generateBtn) return;
+                showCoachmark(generateBtn, 'Generate to build focused skill summaries.');
+            }
+        }
+
+        function completeSkillsGuide() {
+            if (localStorage.getItem('memovSkillsGuideSeen') === '1') return;
+            localStorage.setItem('memovSkillsGuideSeen', '1');
+            hideCoachmark();
         }
 
         // Event delegation for tooltip - only 3 listeners instead of 3*N
@@ -2560,6 +3404,12 @@
             }
         });
 
+        document.getElementById('skills-modal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('skills-modal')) {
+                closeSkillsModal();
+            }
+        });
+
         // ============ Search Functions ============
 
         function openSearchModal() {
@@ -2756,21 +3606,15 @@
                     highlightSearchResults(commitIds);
                 }
 
-                const providerName = 'OpenAI';
                 const answerText = (data.response || '').trim();
 
                 const matchedNodes = (commitIds.length > 0 && graphData && graphData.nodes)
                     ? commitIds.map(id => graphData.nodes.find(node => node.id === id)).filter(Boolean)
                     : [];
 
-                const answerHtml = answerText ? `
-                    <div class="search-result-item ai-summary">
-                        <div class="search-result-header">
-                            <span class="search-result-hash">AI</span>
-                            <span class="search-result-branch">${providerName}</span>
-                        </div>
-                        <div class="search-result-prompt">${escapeHtml(answerText)}</div>
-                    </div>
+                const responseHtml = answerText ? `
+                    <div class="ai-response-header">AI Response (OpenAI)</div>
+                    <div class="ai-response">${escapeHtml(answerText)}</div>
                 ` : '';
 
                 const itemsHtml = matchedNodes.map(node => {
@@ -2786,12 +3630,12 @@
                     `;
                 }).join('');
 
-                const countHtml = `<div style="font-size: 12px; color: #666; margin-bottom: 12px;">${matchedNodes.length} relevant commit(s)</div>`;
+                const countHtml = `<div style="font-size: 12px; color: #666; margin: 12px 0;">${matchedNodes.length} relevant commit(s)</div>`;
 
-                if (!answerHtml && matchedNodes.length === 0) {
+                if (!responseHtml && matchedNodes.length === 0) {
                     resultsDiv.innerHTML = '<div class="search-results-placeholder">No matches found</div>';
                 } else {
-                    resultsDiv.innerHTML = `${answerHtml}${countHtml}${itemsHtml}`;
+                    resultsDiv.innerHTML = `${responseHtml}${countHtml}${itemsHtml}`;
                 }
             } catch (e) {
                 resultsDiv.innerHTML = `<div class="search-error">Error: ${escapeHtml(e.message)}</div>`;
@@ -3084,19 +3928,20 @@
                     return graphData.nodes.find(node => node.id === id);
                 }).filter(node => node !== undefined);
 
-                const providerName = 'OpenAI';
                 const answerText = (data.response || '').trim();
 
-                const answerHtml = answerText ? `
-                    <div class="search-result-item ai-summary">
-                        <div class="item-header">
-                            <span class="item-hash">AI</span>
-                            <span class="item-type">ANSWER</span>
-                            <span class="item-branch">${providerName}</span>
-                        </div>
-                        <div class="item-prompt">${escapeHtml(answerText)}</div>
+                const responseHtml = answerText ? `
+                    <div class="ai-header">
+                        <span>AI Response (OpenAI)</span>
+                        <button class="close-btn" onclick="hideSearchResults()" title="Close">&times;</button>
                     </div>
-                ` : '';
+                    <div class="ai-response">${escapeHtml(answerText)}</div>
+                ` : `
+                    <div class="ai-header">
+                        <span>AI Search</span>
+                        <button class="close-btn" onclick="hideSearchResults()" title="Close">&times;</button>
+                    </div>
+                `;
 
                 const itemsHtml = matchedNodes.map(node => {
                     const changedFiles = node.files && node.diff
@@ -3125,17 +3970,9 @@
                     `;
                 }).join('');
 
-                const headerHtml = `
-                    <div class="search-results-header">
-                        <span class="count">${matchedNodes.length} match${matchedNodes.length > 1 ? 'es' : ''}</span>
-                        <button class="close-btn" onclick="hideSearchResults()" title="Close">&times;</button>
-                    </div>
-                `;
-
                 showSearchResults(`
-                    ${headerHtml}
+                    ${responseHtml}
                     <div class="search-result-list">
-                        ${answerHtml}
                         ${itemsHtml}
                     </div>
                 `);

@@ -13,7 +13,16 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+from memov.constants.prompts import (
+    AI_SEARCH_SYSTEM_PROMPT,
+    AI_SEARCH_USER_PROMPT_TEMPLATE,
+    CLUSTER_SYSTEM_PROMPT,
+    CLUSTER_USER_PROMPT_TEMPLATE,
+    SKILL_SYSTEM_PROMPT,
+    SKILL_USER_PROMPT_TEMPLATE,
+)
 from memov.core.manager import MemovManager, MemStatus
+from memov.storage.skills_db import SkillsDB
 
 LOGGER = logging.getLogger(__name__)
 
@@ -26,6 +35,11 @@ class AISearchRequest(BaseModel):
     api_key: str
     query: str
     provider: str = "openai"  # "anthropic" or "openai"
+
+
+class SkillsRefreshRequest(BaseModel):
+    api_key: str
+    force: bool = False
 
 
 async def _call_anthropic(api_key: str, system_prompt: str, user_prompt: str) -> str:
@@ -50,34 +64,232 @@ async def _call_anthropic(api_key: str, system_prompt: str, user_prompt: str) ->
         return data["content"][0]["text"]
 
 
-async def _call_openai(api_key: str, system_prompt: str, user_prompt: str) -> str:
-    """Call OpenAI API."""
+def _extract_openai_content(data: dict) -> str:
+    try:
+        # Responses API
+        if isinstance(data.get("output"), list):
+            parts = []
+            for item in data["output"]:
+                if not isinstance(item, dict):
+                    continue
+                if item.get("type") == "output_text" and isinstance(item.get("text"), str):
+                    parts.append(item["text"])
+                content = item.get("content") or []
+                if isinstance(content, list):
+                    for part in content:
+                        if not isinstance(part, dict):
+                            continue
+                        if isinstance(part.get("text"), str):
+                            parts.append(part["text"])
+            return "".join(parts)
+
+        # Chat Completions API
+        choices = data.get("choices") or []
+        if not choices:
+            return ""
+        message = choices[0].get("message") or {}
+        content = message.get("content")
+        if isinstance(content, str):
+            return content
+        if isinstance(content, list):
+            parts = []
+            for part in content:
+                if isinstance(part, dict) and isinstance(part.get("text"), str):
+                    parts.append(part["text"])
+            return "".join(parts)
+    except Exception:
+        return ""
+    return ""
+
+
+async def _call_openai(
+    api_key: str,
+    system_prompt: str,
+    user_prompt: str,
+    force_json: bool = True,
+    max_output_tokens: int = 10240,
+) -> str:
+    """Call OpenAI API (Responses API for GPT-5)."""
     async with httpx.AsyncClient(timeout=60.0) as client:
+        payload = {
+            "model": "gpt-5-nano",
+            "input": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            "max_output_tokens": max_output_tokens,
+        }
+        if force_json:
+            payload["text"] = {"format": {"type": "json_object"}, "verbosity": "low"}
+        else:
+            payload["text"] = {"verbosity": "low"}
+
         response = await client.post(
-            "https://api.openai.com/v1/chat/completions",
+            "https://api.openai.com/v1/responses",
             headers={
                 "Authorization": f"Bearer {api_key}",
                 "Content-Type": "application/json",
             },
-            json={
-                "model": "gpt-5-nano",
-                "max_tokens": 1024,
-                "response_format": {"type": "json_object"},
-                "messages": [
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt},
-                ],
-            },
+            json=payload,
         )
         response.raise_for_status()
         data = response.json()
-        return data["choices"][0]["message"]["content"]
+        content = _extract_openai_content(data)
+        if not content:
+            try:
+                import json as _json
+
+                raw_preview = _json.dumps(data)[:2000]
+            except Exception:
+                raw_preview = str(data)[:2000]
+            LOGGER.warning(
+                f"OpenAI empty content (force_json={force_json}). raw_preview={raw_preview!r}"
+            )
+        return content
+
+
+def _get_skills_db(manager: MemovManager) -> SkillsDB:
+    db_path = Path(manager.mem_root_path) / "skills.db"
+    return SkillsDB(db_path)
+
+
+def _ensure_mem_logger(project_path: str) -> None:
+    """Ensure logs are also written to .mem/mem.log for this project."""
+    try:
+        mem_root = Path(project_path) / ".mem"
+        mem_root.mkdir(parents=True, exist_ok=True)
+        log_path = mem_root / "mem.log"
+
+        for handler in LOGGER.handlers:
+            if isinstance(handler, logging.FileHandler):
+                if Path(handler.baseFilename) == log_path:
+                    return
+
+        file_handler = logging.FileHandler(log_path, encoding="utf-8")
+        file_handler.setLevel(logging.INFO)
+        formatter = logging.Formatter(
+            "%(asctime)s %(levelname)s %(name)s - %(message)s"
+        )
+        file_handler.setFormatter(formatter)
+        LOGGER.addHandler(file_handler)
+        LOGGER.setLevel(logging.INFO)
+    except Exception:
+        # Avoid breaking server if log file setup fails
+        return
+
+
+def _build_history_context(history: list[dict]) -> tuple[str, dict, dict]:
+    lines = []
+    short_to_full: dict[str, dict] = {}
+    short_to_entry: dict[str, dict] = {}
+    for entry in history:
+        short_hash = entry["short_hash"].lower()
+        prompt = (entry.get("prompt") or "N/A").replace("\n", " ").strip()
+        prompt = prompt[:160]
+        files = entry.get("files") or []
+        files_preview = ", ".join(files[:5])
+        op = entry.get("operation") or "snap"
+        branch = entry.get("branch") or "unknown"
+        line = f"[{short_hash}] {branch} | {op} | {prompt}"
+        if files_preview:
+            line += f" | files: {files_preview}"
+        lines.append(line)
+        short_to_full[short_hash] = {
+            "commit_hash": entry["commit_hash"],
+            "commit_short": entry["short_hash"],
+        }
+        short_to_entry[short_hash] = entry
+    return "\n".join(lines), short_to_full, short_to_entry
+
+
+def _answer_indicates_no_info(answer: str) -> bool:
+    lowered = answer.strip().lower()
+    if not lowered:
+        return True
+    # English patterns
+    english_markers = [
+        "no information",
+        "no relevant",
+        "not found",
+        "cannot find",
+        "could not find",
+        "unable to find",
+        "does not mention",
+        "no mention",
+    ]
+    # Chinese patterns
+    chinese_markers = [
+        "没有",
+        "未找到",
+        "找不到",
+        "无法找到",
+        "无相关",
+        "未提及",
+        "没有信息",
+    ]
+    return any(marker in lowered for marker in english_markers) or any(
+        marker in answer for marker in chinese_markers
+    )
+
+
+def _parse_json_response(payload: str, label: str) -> dict:
+    import json
+
+    if not payload or not payload.strip():
+        raise HTTPException(status_code=502, detail=f"{label} JSON invalid: empty response")
+    try:
+        return json.loads(payload)
+    except json.JSONDecodeError:
+        cleaned = payload.strip()
+        start = cleaned.find("{")
+        end = cleaned.rfind("}")
+        if start != -1 and end != -1 and end > start:
+            try:
+                return json.loads(cleaned[start : end + 1])
+            except json.JSONDecodeError as e:
+                raise HTTPException(status_code=502, detail=f"{label} JSON invalid: {e.msg}")
+        raise HTTPException(status_code=502, detail=f"{label} JSON invalid: Expecting value")
+
+
+def _build_history_context_limited(
+    history: list[dict], max_chars: int, max_commits: int
+) -> tuple[str, dict, dict]:
+    if max_commits <= 0:
+        return "", {}, {}
+    recent_history = history[-max_commits:] if len(history) > max_commits else history
+    lines = []
+    short_to_full: dict[str, dict] = {}
+    short_to_entry: dict[str, dict] = {}
+    total_len = 0
+    for entry in recent_history:
+        short_hash = entry["short_hash"].lower()
+        prompt = (entry.get("prompt") or "N/A").replace("\n", " ").strip()
+        prompt = prompt[:160]
+        files = entry.get("files") or []
+        files_preview = ", ".join(files[:5])
+        op = entry.get("operation") or "snap"
+        branch = entry.get("branch") or "unknown"
+        line = f"[{short_hash}] {branch} | {op} | {prompt}"
+        if files_preview:
+            line += f" | files: {files_preview}"
+        line_len = len(line) + 1
+        if total_len + line_len > max_chars:
+            break
+        lines.append(line)
+        total_len += line_len
+        short_to_full[short_hash] = {
+            "commit_hash": entry["commit_hash"],
+            "commit_short": entry["short_hash"],
+        }
+        short_to_entry[short_hash] = entry
+    return "\n".join(lines), short_to_full, short_to_entry
 
 
 def create_app(project_path: str) -> "FastAPI":
     """Create FastAPI application with routes."""
     global _project_path
     _project_path = project_path
+    _ensure_mem_logger(project_path)
 
     app = FastAPI(title="MemoV Web UI", version="1.0.0")
 
@@ -258,32 +470,11 @@ def create_app(project_path: str) -> "FastAPI":
         history_context = "\n".join(history_text)
 
         # Build AI prompt
-        system_prompt = """You are an AI assistant helping users search their code history.
-You will be given a list of commits with their prompts/messages.
-Answer the user's question based ONLY on this history. Be concise.
-
-LANGUAGE:
-- Detect the language of the user's question.
-- Respond in the SAME language as the user's question.
-- If the question explicitly requests a language, prioritize that language.
-
-OUTPUT FORMAT (STRICT JSON ONLY):
-- Return ONLY a JSON object (no markdown, no code fences, no extra text).
-- The JSON object MUST contain exactly these keys:
-  - "answer": a concise string answer in the user's language
-  - "commit_ids": an array of 7-character commit hashes (strings) that are relevant
-- Use only commit hashes that appear in the provided history.
-
-Example:
-{"answer":"You fixed the login bug in commit abc1234","commit_ids":["abc1234"]}"""
-
-        user_prompt = f"""Commit history (format: [hash] branch | prompt):
-
-{history_context}
-
-Question: {request.query}
-
-Return ONLY the JSON object with "answer" and "commit_ids" as specified."""
+        system_prompt = AI_SEARCH_SYSTEM_PROMPT
+        user_prompt = AI_SEARCH_USER_PROMPT_TEMPLATE.format(
+            history_context=history_context,
+            query=request.query,
+        )
 
         try:
             if request.provider == "anthropic":
@@ -294,12 +485,8 @@ Return ONLY the JSON object with "answer" and "commit_ids" as specified."""
                 raise HTTPException(status_code=400, detail=f"Unknown provider: {request.provider}")
 
             # Parse JSON response
-            import json
             import re
-            try:
-                parsed = json.loads(ai_response)
-            except json.JSONDecodeError as e:
-                raise HTTPException(status_code=502, detail=f"AI response was not valid JSON: {e.msg}")
+            parsed = _parse_json_response(ai_response, "AI response")
 
             if not isinstance(parsed, dict):
                 raise HTTPException(status_code=502, detail="AI response JSON must be an object.")
@@ -328,6 +515,9 @@ Return ONLY the JSON object with "answer" and "commit_ids" as specified."""
                     )
                 commit_ids.append(normalized)
 
+            if _answer_indicates_no_info(answer):
+                commit_ids = []
+
             # Convert short hashes to full commit hashes
             full_commit_ids = []
             for short_hash in commit_ids:
@@ -347,6 +537,247 @@ Return ONLY the JSON object with "answer" and "commit_ids" as specified."""
         except Exception as e:
             LOGGER.error(f"AI search error: {e}")
             raise HTTPException(status_code=500, detail=str(e))
+
+    @app.get("/api/skills")
+    async def get_skills():
+        """Get cached AI skill summaries and feature clusters."""
+        manager = MemovManager(project_path=_project_path)
+        if manager.check() is not MemStatus.SUCCESS:
+            raise HTTPException(status_code=400, detail="Memov not initialized")
+
+        db = _get_skills_db(manager)
+        features = db.get_features()
+        return {
+            "features": [
+                {
+                    "id": f.feature_id,
+                    "name": f.name,
+                    "summary": f.summary,
+                    "skill_title": f.skill_title,
+                    "skill_content": f.skill_content,
+                    "skill_label": f.skill_label,
+                    "commit_ids": [c["commit_hash"] for c in f.commits],
+                    "commit_shorts": [c["commit_short"] for c in f.commits],
+                }
+                for f in features
+            ]
+        }
+
+    @app.post("/api/skills/refresh")
+    async def refresh_skills(request: SkillsRefreshRequest):
+        """Generate feature clusters and skills summaries using OpenAI."""
+        manager = MemovManager(project_path=_project_path)
+        if manager.check() is not MemStatus.SUCCESS:
+            raise HTTPException(status_code=400, detail="Memov not initialized")
+
+        history = manager.get_history(limit=2000, include_diff=False, diff_mode="none")
+        LOGGER.info(f"Skills refresh: history commits loaded={len(history)}")
+        if not history:
+            raise HTTPException(status_code=400, detail="No history available to summarize")
+        attempt_limits = [
+            (800, 12000),
+            (400, 8000),
+            (200, 5000),
+            (100, 3000),
+        ]
+        history_context = ""
+        short_to_full: dict[str, dict] = {}
+        short_to_entry: dict[str, dict] = {}
+
+        cluster_system_prompt = CLUSTER_SYSTEM_PROMPT
+        cluster_user_prompt = CLUSTER_USER_PROMPT_TEMPLATE.format(
+            history_context=history_context
+        )
+
+        cluster_response = ""
+        cluster_payload: Optional[dict] = None
+        last_error: Optional[HTTPException] = None
+        for max_commits, max_chars in attempt_limits:
+            history_context, short_to_full, short_to_entry = _build_history_context_limited(
+                history, max_chars=max_chars, max_commits=max_commits
+            )
+            if not history_context:
+                LOGGER.warning(
+                    f"Skills refresh: empty history context for max_commits={max_commits}, max_chars={max_chars}"
+                )
+                continue
+            LOGGER.info(
+                "Skills refresh: clustering attempt "
+                f"max_commits={max_commits}, max_chars={max_chars}, "
+                f"context_len={len(history_context)}"
+            )
+            cluster_user_prompt = CLUSTER_USER_PROMPT_TEMPLATE.format(
+                history_context=history_context
+            )
+
+            try:
+                cluster_response = await _call_openai(
+                    request.api_key, cluster_system_prompt, cluster_user_prompt, True
+                )
+                if not cluster_response:
+                    LOGGER.warning("Skills refresh: empty cluster response, retrying without JSON format.")
+                    cluster_response = await _call_openai(
+                        request.api_key, cluster_system_prompt, cluster_user_prompt, False
+                    )
+                LOGGER.info(
+                    "Skills refresh: cluster response received "
+                    f"len={len(cluster_response)} preview={cluster_response[:200]!r}"
+                )
+                cluster_payload = _parse_json_response(cluster_response, "Cluster")
+                last_error = None
+                break
+            except HTTPException as e:
+                if e.status_code == 502 and "Cluster JSON invalid" in str(e.detail):
+                    LOGGER.warning(
+                        "Skills refresh: cluster parse error, will retry. "
+                        f"detail={e.detail} raw_len={len(cluster_response)} raw={cluster_response!r}"
+                    )
+                    last_error = e
+                    continue
+                raise
+            except httpx.HTTPStatusError as e:
+                raise HTTPException(
+                    status_code=e.response.status_code, detail=f"API error: {e.response.text}"
+                )
+            except Exception as e:
+                LOGGER.error(f"Skills cluster error: {e}")
+                raise HTTPException(status_code=500, detail=str(e))
+
+        if last_error is not None:
+            LOGGER.error(f"Skills refresh: failed after retries. last_error={last_error.detail}")
+            raise last_error
+        if cluster_payload is None:
+            LOGGER.error("Skills refresh: cluster payload is None after retries.")
+            raise HTTPException(status_code=502, detail="Cluster JSON invalid: empty response")
+
+        import re
+
+        if not isinstance(cluster_payload, dict) or "features" not in cluster_payload:
+            LOGGER.error(
+                f"Skills refresh: cluster payload missing 'features'. keys={list(cluster_payload.keys())}"
+            )
+            raise HTTPException(status_code=502, detail="Cluster JSON must include 'features'.")
+
+        features = cluster_payload.get("features")
+        if not isinstance(features, list):
+            LOGGER.error("Skills refresh: cluster payload 'features' is not a list.")
+            raise HTTPException(status_code=502, detail="'features' must be an array.")
+
+        db = _get_skills_db(manager)
+        db.reset()
+
+        for feature in features:
+            if not isinstance(feature, dict):
+                raise HTTPException(status_code=502, detail="Feature entries must be objects.")
+            name = feature.get("name")
+            summary = feature.get("summary")
+            commit_ids = feature.get("commit_ids")
+            if not isinstance(name, str) or not name.strip():
+                raise HTTPException(status_code=502, detail="Feature 'name' must be a string.")
+            if not isinstance(summary, str) or not summary.strip():
+                raise HTTPException(status_code=502, detail="Feature 'summary' must be a string.")
+            if not isinstance(commit_ids, list) or not commit_ids:
+                raise HTTPException(status_code=502, detail="Feature 'commit_ids' must be a non-empty array.")
+
+            normalized_ids = []
+            for item in commit_ids:
+                if not isinstance(item, str):
+                    raise HTTPException(status_code=502, detail="Commit ids must be strings.")
+                commit_short = item.strip().lower()
+                if not re.fullmatch(r"[a-f0-9]{7}", commit_short):
+                    raise HTTPException(
+                        status_code=502,
+                        detail=f"Invalid commit id '{item}'. Expected 7-char hex.",
+                    )
+                if commit_short not in short_to_full:
+                    raise HTTPException(
+                        status_code=502,
+                        detail=f"Commit id '{item}' not found in history.",
+                    )
+                normalized_ids.append(commit_short)
+
+            feature_id = db.insert_feature(name.strip(), summary.strip())
+            commits_payload = [short_to_full[cid] for cid in normalized_ids]
+            db.set_feature_commits(feature_id, commits_payload)
+
+        # Generate skill docs per feature
+        features_for_prompt = db.get_features()
+        for feature in features_for_prompt:
+            commit_lines = []
+            for commit in feature.commits:
+                entry = short_to_entry.get(commit["commit_short"].lower())
+                if entry:
+                    prompt = (entry.get("prompt") or "N/A").replace("\n", " ").strip()
+                    prompt = prompt[:180]
+                    branch = entry.get("branch") or "unknown"
+                    op = entry.get("operation") or "snap"
+                    files = entry.get("files") or []
+                    files_preview = ", ".join(files[:5])
+                    line = f"[{commit['commit_short']}] {branch} | {op} | {prompt}"
+                    if files_preview:
+                        line += f" | files: {files_preview}"
+                    commit_lines.append(line)
+                else:
+                    commit_lines.append(f"[{commit['commit_short']}] {commit['commit_hash']}")
+            commits_text = "\n".join(commit_lines)
+
+            skill_system_prompt = SKILL_SYSTEM_PROMPT
+            skill_user_prompt = SKILL_USER_PROMPT_TEMPLATE.format(
+                feature_name=feature.name,
+                feature_summary=feature.summary,
+                commits_text=commits_text,
+            )
+
+            try:
+                skill_response = await _call_openai(
+                    request.api_key, skill_system_prompt, skill_user_prompt, True
+                )
+                if not skill_response:
+                    LOGGER.warning("Skills refresh: empty skill response, retrying without JSON format.")
+                    skill_response = await _call_openai(
+                        request.api_key, skill_system_prompt, skill_user_prompt, False
+                    )
+            except httpx.HTTPStatusError as e:
+                raise HTTPException(
+                    status_code=e.response.status_code, detail=f"API error: {e.response.text}"
+                )
+            except Exception as e:
+                LOGGER.error(f"Skills summary error: {e}")
+                raise HTTPException(status_code=500, detail=str(e))
+
+            skill_payload = _parse_json_response(skill_response, "Skill")
+
+            if not isinstance(skill_payload, dict):
+                raise HTTPException(status_code=502, detail="Skill JSON must be an object.")
+
+            title = skill_payload.get("title")
+            content = skill_payload.get("content")
+            label = skill_payload.get("label")
+            if not isinstance(title, str) or not title.strip():
+                raise HTTPException(status_code=502, detail="Skill 'title' must be a string.")
+            if not isinstance(content, str) or not content.strip():
+                raise HTTPException(status_code=502, detail="Skill 'content' must be a string.")
+            if not isinstance(label, str) or not label.strip():
+                raise HTTPException(status_code=502, detail="Skill 'label' must be a string.")
+
+            db.set_skill_doc(feature.feature_id, title.strip(), content.strip(), label.strip())
+
+        refreshed = db.get_features()
+        return {
+            "features": [
+                {
+                    "id": f.feature_id,
+                    "name": f.name,
+                    "summary": f.summary,
+                    "skill_title": f.skill_title,
+                    "skill_content": f.skill_content,
+                    "skill_label": f.skill_label,
+                    "commit_ids": [c["commit_hash"] for c in f.commits],
+                    "commit_shorts": [c["commit_short"] for c in f.commits],
+                }
+                for f in refreshed
+            ]
+        }
 
     # Serve static files
     static_dir = Path(__file__).parent / "static"
